@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: ticket-booking-backend
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+payhere:
+  merchant-id: ${PAYHERE_MERCHANT_ID}
+  merchant-secret: ${PAYHERE_MERCHANT_SECRET}
+
+logging:
+  level:
+    org.springframework.data.mongodb: INFO
