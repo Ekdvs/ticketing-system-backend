@@ -1,8 +1,13 @@
 package com.company.ticket_booking_backend.controller;
 
 import com.company.ticket_booking_backend.model.ApiResponse;
+import com.company.ticket_booking_backend.model.LoginRequest;
+import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
+import com.company.ticket_booking_backend.repository.UserRepository;
+import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +20,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody User user) {
@@ -48,13 +59,72 @@ public class UserController {
         }
     }
 
-    @GetMapping("/")
-    public ResponseEntity<ApiResponse<User>> getUser() {
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
-                "mm",
-                true,
-                false,
-                null
-        ));
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> loginUser(@RequestBody LoginRequest loginRequest) {
+        try {
+            User user = userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
+
+            // Generate tokens
+            String accessToken = jwtUtil.generateToken(user);
+            String refreshToken = java.util.UUID.randomUUID().toString(); // simple refresh token
+            user.setRefreshToken(refreshToken);
+
+            // Save refresh token
+            userRepository.save(user); // save updated user
+
+            LoginResponse loginResponse = new LoginResponse(
+                    accessToken,
+                    refreshToken,
+                    user.getEmail(),
+                    user.getRole().name()
+            );
+
+            return ResponseEntity.ok(new ApiResponse<>("Login successful", false, true, loginResponse));
+
+        } catch (Exception e) {
+            System.out.println("Login error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<User>> getUserData(HttpServletRequest request) {
+        try {
+            // Extract JWT from Authorization header
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>("Unauthorized: No token provided", true, false, null));
+            }
+
+            String token = authHeader.substring(7);
+            System.out.println("token: " + token);
+
+            // Validate token
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>("Unauthorized: Invalid token", true, false, null));
+            }
+
+            // Get userId from token
+            String userId = jwtUtil.getUserIdFromToken(token);
+            if (userId == null || userId.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>("Unauthorized", true, false, null));
+            }
+
+            // Call service to fetch user
+            User user = userService.getUserById(userId);
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>("User data fetched successfully", false, true, user)
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
     }
 }
