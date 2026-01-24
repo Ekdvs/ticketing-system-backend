@@ -29,6 +29,8 @@ public class UserServiceImpl implements UserService {
         user.setVerifyEmail(false);
         user.setStatus(User.Status.ACTIVE);
         user.setRole(User.Role.USER);
+        String token = java.util.UUID.randomUUID().toString();
+        user.setEmailVerificationToken(token);
 
         return userRepository.save(user);
     }
@@ -70,5 +72,25 @@ public class UserServiceImpl implements UserService {
         }
         return user.get();
     }
+
+    
+    
+    @Override
+    public void verifyEmail(String token) {
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
+
+        if (Boolean.TRUE.equals(user.getVerifyEmail())) {
+            throw new RuntimeException("Email already verified");
+        }
+
+        user.setVerifyEmail(true);
+        user.setEmailVerificationToken(null); // clear token after verification
+        userRepository.save(user);
+    }
+
+
+
+
 
 }

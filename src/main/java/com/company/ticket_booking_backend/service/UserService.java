@@ -7,4 +7,5 @@ public interface UserService {
     User getUserByEmail(String email);
     User loginUser(String email, String password);
     User getUserById(String userId);
+    void verifyEmail(String token);
 }

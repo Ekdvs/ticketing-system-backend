@@ -19,11 +19,20 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/user/register","/api/user/login","/api/user/me").permitAll()
+                        // Public endpoints
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/user/register",
+                                "/api/user/login",
+                                "/api/user/me",
+                                "/api/user/verify-email/**"
+                        ).permitAll()
+                        // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // Add JWT filter before Spring Security authentication
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

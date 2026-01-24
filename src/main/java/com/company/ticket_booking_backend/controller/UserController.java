@@ -40,6 +40,8 @@ public class UserController {
         }
         try {
             User createdUser = userService.createUser(user);
+            String verificationLink = "http://localhost:8080/api/user/verify-email/" + createdUser.getEmailVerificationToken();
+            System.out.println("Verification link: " + verificationLink);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     "User registered successfully",
@@ -100,7 +102,7 @@ public class UserController {
             }
 
             String token = authHeader.substring(7);
-            System.out.println("token: " + token);
+            //System.out.println("token: " + token);
 
             // Validate token
             if (!jwtUtil.validateToken(token)) {
@@ -122,6 +124,23 @@ public class UserController {
                     new ApiResponse<>("User data fetched successfully", false, true, user)
             );
 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+    //verfiy email
+    @GetMapping("/verify-email/{token}")
+    public ResponseEntity<ApiResponse<String>> verifyEmail(@PathVariable String token) {
+        try {
+            System.out.println("Verifying email for token: " + token);
+            userService.verifyEmail(token);
+            return ResponseEntity.ok(new ApiResponse<>(
+                "Email verified successfully", 
+                false, 
+                true, 
+                null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(e.getMessage(), true, false, null));

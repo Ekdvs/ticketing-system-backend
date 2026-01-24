@@ -53,6 +53,9 @@ public class User {
 
     private Role role = Role.USER;
 
+    private String emailVerificationToken;
+
+
     @CreatedDate
     private Date createdDate;
 
@@ -201,5 +204,12 @@ public class User {
 
     public void setUpdateAt(Date updateAt) {
         this.updateAt = updateAt;
+    }
+
+    public String getEmailVerificationToken() {
+        return emailVerificationToken;
+    }
+    public void setEmailVerificationToken(String emailVerificationToken) {
+        this.emailVerificationToken = emailVerificationToken;
     }
 }

@@ -7,10 +7,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -21,6 +25,16 @@ public class JwtFilter extends OncePerRequestFilter {
     public JwtFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
+    }
+
+    // Skip filter for public endpoints
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+return path.startsWith("/api/user/verify-email") || 
+           path.startsWith("/api/auth") ||
+           path.startsWith("/api/user/login") ||
+           path.startsWith("/api/user/register");
     }
 
     @Override
@@ -37,18 +51,25 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 if (jwtUtil.validateToken(token)) {
                     String email = jwtUtil.getUserEmailFromToken(token);
-
-                    // Optionally, load user from DB
                     User user = userService.getUserByEmail(email);
 
-                    // Set user info as request attributes
+                    // Set Spring Security Authentication
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    user.getEmail(),
+                                    null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                            );
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    // Optional: also set request attributes
                     request.setAttribute("email", user.getEmail());
                     request.setAttribute("role", user.getRole().name());
                     request.setAttribute("userId", user.getId());
                 }
             }
         } catch (Exception e) {
-            // Optional: log invalid token attempts
             System.out.println("Invalid JWT: " + e.getMessage());
         }
 

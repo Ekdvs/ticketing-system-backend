@@ -14,14 +14,10 @@ import java.util.UUID;
 @Component
 public class JwtUtil {
 
-    private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512); // generate secure key
-
-    @Value("${jwt.secret}")
-    private String secret;
+    private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Value("${jwt.expiration}")
     private long expiration;
-
 
     public String generateToken(User user) {
         return Jwts.builder()
