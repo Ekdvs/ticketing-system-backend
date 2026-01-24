@@ -1,5 +1,6 @@
 package com.company.ticket_booking_backend.security;
 
+<<<<<<< HEAD
 import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.service.UserService;
 import jakarta.servlet.FilterChain;
@@ -75,4 +76,7 @@ return path.startsWith("/api/user/verify-email") ||
 
         filterChain.doFilter(request, response);
     }
+=======
+public class JwtFilter {
+>>>>>>> ff24bb8d6cb62f16db7ee8e55bf235edb510e59e
 }

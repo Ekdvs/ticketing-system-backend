@@ -1,5 +1,6 @@
 package com.company.ticket_booking_backend.security;
 
+<<<<<<< HEAD
 import com.company.ticket_booking_backend.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -61,4 +62,7 @@ public class JwtUtil {
                 .getBody()
                 .get("userId", String.class);
     }
+=======
+public class JwtUtil {
+>>>>>>> ff24bb8d6cb62f16db7ee8e55bf235edb510e59e
 }

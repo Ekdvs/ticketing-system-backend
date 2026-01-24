@@ -1,6 +1,7 @@
 package com.company.ticket_booking_backend.controller;
 
 import com.company.ticket_booking_backend.model.ApiResponse;
+
 import com.company.ticket_booking_backend.model.LoginRequest;
 import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
@@ -8,6 +9,8 @@ import com.company.ticket_booking_backend.repository.UserRepository;
 import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import com.company.ticket_booking_backend.model.User;
+import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +24,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
+
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody User user) {
@@ -40,8 +45,10 @@ public class UserController {
         }
         try {
             User createdUser = userService.createUser(user);
+
             String verificationLink = "http://localhost:8080/api/user/verify-email/" + createdUser.getEmailVerificationToken();
             System.out.println("Verification link: " + verificationLink);
+
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     "User registered successfully",
@@ -60,6 +67,7 @@ public class UserController {
                     ));
         }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> loginUser(@RequestBody LoginRequest loginRequest) {
@@ -146,4 +154,5 @@ public class UserController {
                     .body(new ApiResponse<>(e.getMessage(), true, false, null));
         }
     }
+
 }
