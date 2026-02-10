@@ -1,6 +1,6 @@
 package com.company.ticket_booking_backend.security;
 
-<<<<<<< HEAD
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +38,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-=======
-public class SecurityConfig {
->>>>>>> ff24bb8d6cb62f16db7ee8e55bf235edb510e59e
+
+
 }
