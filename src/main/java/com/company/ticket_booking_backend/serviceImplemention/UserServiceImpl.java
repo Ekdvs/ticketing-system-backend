@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -73,8 +76,6 @@ public class UserServiceImpl implements UserService {
         return user.get();
     }
 
-    
-    
     @Override
     public void verifyEmail(String token) {
         User user = userRepository.findByEmailVerificationToken(token)
@@ -88,6 +89,84 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerificationToken(null); // clear token after verification
         userRepository.save(user);
     }
+
+    @Override
+    public void logoutUser(String userId) {
+        User user = getUserById(userId);
+        user.setRefreshToken(null); // Clear refresh token on logout
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deleteUser(String userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    public User updateUser(String userId, User updatedUser) {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User does not exist."));
+
+        if (updatedUser.getFirstName() != null) {
+            existingUser.setFirstName(updatedUser.getFirstName());
+        }
+        if (updatedUser.getLastName() != null) {
+            existingUser.setLastName(updatedUser.getLastName());
+        }
+        if (updatedUser.getMobile() != null) {
+            existingUser.setMobile(updatedUser.getMobile());
+        }
+        if (updatedUser.getAvatar() != null) {
+            existingUser.setAvatar(updatedUser.getAvatar());
+        }
+
+        return userRepository.save(existingUser);
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User does not exist."));
+
+        String otp = String.valueOf(new Random().nextInt(900000)+100000);
+        user.setForgotPasswordOtp(otp);
+        user.setForgotPasswordExpiryDate(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(user);
+        //mailSevice.sendOtpEmail(user, otp);
+        return user;
+    }
+
+    @Override
+    public void verifyOtp(String email ,String otp){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User does not exist."));
+
+        if (user.getForgotPasswordExpiryDate() == null ||
+                user.getForgotPasswordExpiryDate().isBefore(LocalDateTime.now())) {
+
+            throw new RuntimeException("OTP expired");
+        }
+
+        if(!user.getForgotPasswordOtp().equals(otp)){
+            throw new RuntimeException("Invalid OTP.");
+        }
+        user.setForgotPasswordOtp(null);
+        user.setForgotPasswordExpiryDate(null);
+        userRepository.save(user);
+
+
+    }
+
+    @Override
+    public void resetPassword(String email, String newPassword){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User does not exist."));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
 
 
 

@@ -9,11 +9,11 @@ import com.company.ticket_booking_backend.repository.UserRepository;
 import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import com.company.ticket_booking_backend.model.User;
-import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,7 +35,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody User user) {
         //field validation
-        if(user.getFirstName()==null || user.getLastName()==null || user.getEmail()==null || user.getPassword()==null){
+        if (user.getFirstName() == null || user.getLastName() == null || user.getEmail() == null || user.getPassword() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     "All field are request",
                     true,
@@ -57,7 +57,7 @@ public class UserController {
                     createdUser
             ));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
                             "Internal server error",
@@ -145,14 +145,133 @@ public class UserController {
             System.out.println("Verifying email for token: " + token);
             userService.verifyEmail(token);
             return ResponseEntity.ok(new ApiResponse<>(
-                "Email verified successfully", 
-                false, 
-                true, 
-                null));
+                    "Email verified successfully",
+                    false,
+                    true,
+                    null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(e.getMessage(), true, false, null));
         }
     }
 
+    @PostMapping("/forgot-password/{email}")
+    public ResponseEntity<ApiResponse> forgotPassword(@PathVariable String email) {
+        try {
+            User user = userService.forgotPassword(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>("User not found", true, false, null));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Password reset link sent to email (simulated)",
+                    false,
+                    true,
+                    null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        try {
+            userService.verifyOtp(email, otp);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "OTP verified successfully",
+                    false,
+                    true,
+                    null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
+        try {
+            userService.resetPassword(email, newPassword);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Password reset successfully",
+                    false,
+                    true,
+                    null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse> getAllUsers() {
+        try {
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Users fetched successfully",
+                    false,
+                    true,
+                    userRepository.findAll()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logoutUser(HttpServletRequest request) {
+        try {
+            Authentication authentication =
+                    SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !((org.springframework.security.core.Authentication) authentication).isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>("Unauthorized", true, false, null));
+            }
+
+            String email = authentication.getName(); // comes from JwtFilter
+            User user = userService.getUserByEmail(email);
+
+            userService.logoutUser(user.getId());
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Logged out successfully",
+                    false,
+                    true,
+                    null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<ApiResponse<String>> deleteUser() {
+        try {
+            Authentication authentication =
+                    SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !((org.springframework.security.core.Authentication) authentication).isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>("Unauthorized", true, false, null));
+            }
+            String email = authentication.getName(); // comes from JwtFilter
+            User user = userService.getUserByEmail(email);
+            String userId = user.getId();
+
+            userRepository.deleteById(userId);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "User deleted successfully",
+                    false,
+                    true,
+                    null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(e.getMessage(), true, false, null));
+        }
+    }
 }
+
