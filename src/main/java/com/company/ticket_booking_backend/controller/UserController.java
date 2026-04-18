@@ -4,6 +4,7 @@ import com.company.ticket_booking_backend.model.ApiResponse;
 import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,6 +66,7 @@ public class UserController {
 
     // ================= ALL USERS =================
     @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<User>>> all() {
 
         return ResponseEntity.ok(

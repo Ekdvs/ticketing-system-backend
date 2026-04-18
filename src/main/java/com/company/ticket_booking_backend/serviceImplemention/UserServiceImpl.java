@@ -73,14 +73,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponse refreshToken(String refreshToken) {
 
-        User user = userRepository.findAll()
-                .stream()
-                .filter(u -> refreshToken.equals(u.getRefreshToken()))
-                .findFirst()
+        User user = userRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
 
+        // (optional security check)
+        if (user.getRefreshToken() == null || user.getRefreshToken().isEmpty()) {
+            throw new RuntimeException("Refresh token expired. Please login again.");
+        }
+
+        // CREATE NEW TOKENS
         String newAccessToken = jwtUtil.generateToken(user);
-        String newRefreshToken = createRefreshToken(user);
+
+        String newRefreshToken = UUID.randomUUID().toString();
+        user.setRefreshToken(newRefreshToken);
+
+        userRepository.save(user);
 
         return new LoginResponse(
                 newAccessToken,
@@ -89,7 +96,6 @@ public class UserServiceImpl implements UserService {
                 user.getRole().name()
         );
     }
-
     // ---- other methods unchanged ----
 
     @Override
