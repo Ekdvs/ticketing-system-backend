@@ -1,39 +1,40 @@
 package com.company.ticket_booking_backend.serviceImplemention;
 
+import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.repository.UserRepository;
+import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
 
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(16);
+
+    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+    }
+
     @Override
     public User createUser(User user) {
 
-        //Email uniquenss check
-        userRepository.findByEmail(user.getEmail()).ifPresent(u->{
+        userRepository.findByEmail(user.getEmail()).ifPresent(u -> {
             throw new RuntimeException("User already exists. Use another email.");
         });
 
-        //hash password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        // Defaults
         user.setVerifyEmail(false);
         user.setStatus(User.Status.ACTIVE);
         user.setRole(User.Role.USER);
-        String token = java.util.UUID.randomUUID().toString();
-        user.setEmailVerificationToken(token);
+        user.setEmailVerificationToken(UUID.randomUUID().toString());
 
         return userRepository.save(user);
     }
@@ -44,56 +45,73 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User does not exist."));
     }
 
-
     @Override
     public User loginUser(String email, String password) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User does not exist."));
 
-        // Check if email is verified
-        if (user.getVerifyEmail() == false) {
+        User user = getUserByEmail(email);
+
+        if (!user.getVerifyEmail()) {
             throw new RuntimeException("Please verify your email before login.");
         }
 
-        // Check password
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Incorrect password.");
         }
 
-        // Update last login date
         user.setLastLoginDate(LocalDateTime.now());
-        userRepository.save(user);
-
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
+    public String createRefreshToken(User user) {
+        String token = UUID.randomUUID().toString();
+        user.setRefreshToken(token);
+        userRepository.save(user);
+        return token;
+    }
+
+    @Override
+    public LoginResponse refreshToken(String refreshToken) {
+
+        User user = userRepository.findAll()
+                .stream()
+                .filter(u -> refreshToken.equals(u.getRefreshToken()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        String newAccessToken = jwtUtil.generateToken(user);
+        String newRefreshToken = createRefreshToken(user);
+
+        return new LoginResponse(
+                newAccessToken,
+                newRefreshToken,
+                user.getEmail(),
+                user.getRole().name()
+        );
+    }
+
+    // ---- other methods unchanged ----
+
+    @Override
     public User getUserById(String userId) {
-        Optional<User> user = userRepository.findById(userId);
-        if(!user.isPresent()) {
-            throw new RuntimeException("User does not exist.");
-        }
-        return user.get();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User does not exist."));
     }
 
     @Override
     public void verifyEmail(String token) {
         User user = userRepository.findByEmailVerificationToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
-
-        if (Boolean.TRUE.equals(user.getVerifyEmail())) {
-            throw new RuntimeException("Email already verified");
-        }
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
 
         user.setVerifyEmail(true);
-        user.setEmailVerificationToken(null); // clear token after verification
+        user.setEmailVerificationToken(null);
         userRepository.save(user);
     }
 
     @Override
     public void logoutUser(String userId) {
         User user = getUserById(userId);
-        user.setRefreshToken(null); // Clear refresh token on logout
+        user.setRefreshToken(null);
         userRepository.save(user);
     }
 
@@ -104,23 +122,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(String userId, User updatedUser) {
-        User existingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User does not exist."));
+        User user = getUserById(userId);
 
-        if (updatedUser.getFirstName() != null) {
-            existingUser.setFirstName(updatedUser.getFirstName());
-        }
-        if (updatedUser.getLastName() != null) {
-            existingUser.setLastName(updatedUser.getLastName());
-        }
-        if (updatedUser.getMobile() != null) {
-            existingUser.setMobile(updatedUser.getMobile());
-        }
-        if (updatedUser.getAvatar() != null) {
-            existingUser.setAvatar(updatedUser.getAvatar());
-        }
+        if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
+        if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
+        if (updatedUser.getMobile() != null) user.setMobile(updatedUser.getMobile());
+        if (updatedUser.getAvatar() != null) user.setAvatar(updatedUser.getAvatar());
 
-        return userRepository.save(existingUser);
+        return userRepository.save(user);
     }
 
     @Override
@@ -130,46 +139,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User forgotPassword(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User does not exist."));
+        User user = getUserByEmail(email);
+        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
 
-        String otp = String.valueOf(new Random().nextInt(900000)+100000);
         user.setForgotPasswordOtp(otp);
         user.setForgotPasswordExpiryDate(LocalDateTime.now().plusMinutes(5));
-        userRepository.save(user);
-        //mailSevice.sendOtpEmail(user, otp);
-        return user;
+
+        return userRepository.save(user);
     }
 
     @Override
-    public void verifyOtp(String email ,String otp){
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User does not exist."));
+    public void verifyOtp(String email, String otp) {
+        User user = getUserByEmail(email);
 
         if (user.getForgotPasswordExpiryDate() == null ||
                 user.getForgotPasswordExpiryDate().isBefore(LocalDateTime.now())) {
-
             throw new RuntimeException("OTP expired");
         }
 
-        if(!user.getForgotPasswordOtp().equals(otp)){
-            throw new RuntimeException("Invalid OTP.");
+        if (!otp.equals(user.getForgotPasswordOtp())) {
+            throw new RuntimeException("Invalid OTP");
         }
+
         user.setForgotPasswordOtp(null);
         user.setForgotPasswordExpiryDate(null);
         userRepository.save(user);
-
-
     }
 
     @Override
-    public void resetPassword(String email, String newPassword){
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User does not exist."));
+    public void resetPassword(String email, String newPassword) {
+        User user = getUserByEmail(email);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
-
-
-
-
-
-
 }

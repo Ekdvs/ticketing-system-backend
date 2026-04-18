@@ -1,5 +1,6 @@
 package com.company.ticket_booking_backend.service;
 
+import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
 
 import java.util.List;
@@ -21,4 +22,9 @@ public interface UserService {
     void resetPassword(String email, String newPassword);
     User forgotPassword(String email);
     void logoutUser(String userId);
+    String createRefreshToken(User user);
+
+
+
+    LoginResponse refreshToken(String refreshToken);
 }

@@ -11,6 +11,7 @@ server:
   port: 8080
 
 jwt:
+  secret: "THIS_IS_A_VERY_LONG_SECRET_KEY_AT_LEAST_64_CHARACTERS_LONG_FOR_HS512"
   expiration: 3600000
 
 cloudinary:
