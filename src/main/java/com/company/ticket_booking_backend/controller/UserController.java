@@ -1,10 +1,7 @@
 package com.company.ticket_booking_backend.controller;
 
-import com.company.ticket_booking_backend.model.ApiResponse;
+import com.company.ticket_booking_backend.model.*;
 
-import com.company.ticket_booking_backend.model.LoginRequest;
-import com.company.ticket_booking_backend.model.LoginResponse;
-import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.repository.UserRepository;
 import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.UserService;
@@ -33,41 +30,42 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody User user) {
-        //field validation
-        if (user.getFirstName() == null || user.getLastName() == null || user.getEmail() == null || user.getPassword() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    "All field are request",
-                    true,
-                    false,
-                    null
-            ));
+    public ResponseEntity<ApiResponse<UserResponse>> registerUser(@RequestBody User user) {
+
+        if (user.getFirstName() == null || user.getLastName() == null ||
+                user.getEmail() == null || user.getPassword() == null) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>("All fields are required", true, false, null));
         }
+
         try {
             User createdUser = userService.createUser(user);
 
-            String verificationLink = "http://localhost:8080/api/user/verify-email/" + createdUser.getEmailVerificationToken();
+            // Convert to response DTO
+            UserResponse response = new UserResponse();
+            response.setId(createdUser.getId());
+            response.setFirstName(createdUser.getFirstName());
+            response.setLastName(createdUser.getLastName());
+            response.setEmail(createdUser.getEmail());
+            response.setAvatar(createdUser.getAvatar());
+            response.setMobile(createdUser.getMobile());
+            response.setRole(createdUser.getRole().name());
+
+
+            String verificationLink =
+                    "http://localhost:8080/api/user/verify-email/" + createdUser.getEmailVerificationToken();
+
             System.out.println("Verification link: " + verificationLink);
 
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
-                    "User registered successfully",
-                    false,
-                    true,
-                    createdUser
-            ));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse<>("User registered successfully", false, true, response));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(
-                            "Internal server error",
-                            true,
-                            false,
-                            null
-                    ));
+                    .body(new ApiResponse<>("Internal server error", true, false, null));
         }
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> loginUser(@RequestBody LoginRequest loginRequest) {

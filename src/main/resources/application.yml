@@ -1,9 +1,10 @@
 spring:
   application:
     name: ticket-booking-backend
+
   data:
     mongodb:
-      uri: ${MONGO_URI}
+      uri: mongodb+srv://stu0752678:rg2a8kWUOtzG3BCd@cluster0.kughe.mongodb.net/ticketdb?retryWrites=true&w=majority
       write-concern: ACKNOWLEDGED
 
 server:

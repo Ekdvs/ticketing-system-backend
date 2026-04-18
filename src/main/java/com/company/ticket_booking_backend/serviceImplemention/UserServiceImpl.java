@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // Update last login date
-        user.setLastLoginDate(new java.util.Date());
+        user.setLastLoginDate(LocalDateTime.now());
         userRepository.save(user);
 
         return user;

@@ -14,6 +14,8 @@ public interface UserService {
 
     void deleteUser(String userId);
 
+    User updateUser(String userId, User updatedUser);
+
     List<User> getAllUsers();
     void verifyOtp(String email, String otp);
     void resetPassword(String email, String newPassword);
