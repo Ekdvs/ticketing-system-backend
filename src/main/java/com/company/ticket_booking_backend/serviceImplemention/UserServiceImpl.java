@@ -1,9 +1,11 @@
 package com.company.ticket_booking_backend.serviceImplemention;
 
+import com.company.ticket_booking_backend.EmailTemplates.EmailTemplates;
 import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.repository.UserRepository;
 import com.company.ticket_booking_backend.security.JwtUtil;
+import com.company.ticket_booking_backend.service.EmailService;
 import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,10 +19,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(16);
+    private final EmailService emailService;
 
-    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil) {
+    public UserServiceImpl(UserRepository userRepository,
+                           JwtUtil jwtUtil,
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
     }
 
     @Override
@@ -36,7 +42,19 @@ public class UserServiceImpl implements UserService {
         user.setRole(User.Role.USER);
         user.setEmailVerificationToken(UUID.randomUUID().toString());
 
-        return userRepository.save(user);
+        // generate token
+        String token = UUID.randomUUID().toString();
+        user.setEmailVerificationToken(token);
+        User savedUser= userRepository.save(user);
+
+        String link = "http://localhost:8080/api/auth/verify-email/" + token;
+        emailService.sendEmail(
+                savedUser.getEmail(),
+                "Verify Your Email",
+                EmailTemplates.welcomeEmail(savedUser.getFirstName(), link)
+        );
+        return savedUser;
+
     }
 
     @Override

@@ -1,6 +1,17 @@
 spring:
   application:
     name: ticket-booking-backend
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ekdvsampath02@gmail.com
+    password: wonhlwvpvzgrijuz
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   data:
     mongodb:
