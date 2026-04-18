@@ -26,7 +26,12 @@ public class SecurityConfig {
                                 "/api/user/register",
                                 "/api/user/login",
                                 "/api/user/me",
-                                "/api/user/verify-email/**"
+                                "/api/user/verify-email/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
                         ).permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
