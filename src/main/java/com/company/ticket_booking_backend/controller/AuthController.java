@@ -74,6 +74,64 @@ public class AuthController {
         );
     }
 
+    // ================= OTP send =================
+    @PostMapping("/forgot-password/{email}")
+    public ResponseEntity<ApiResponse> forgotPassword(@PathVariable String email) {
+
+            User user = userService.forgotPassword(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>("User not found", true, false, null));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Password reset link sent to email (simulated)",
+                    false,
+                    true,
+                    null));
+
+    }
+
+    // ================= OTP Verify =================
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+            User user =userService.getUserByEmail(email); // Check if user exists, else throw
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("User not found", true, false, null));
+        }
+            userService.verifyOtp(email, otp);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "OTP verified successfully",
+                    false,
+                    true,
+                    null));
+
+
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
+
+        if(email == null || newPassword == null) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>("Email and new password are required", true, false, null));
+        }
+
+        User user = userService.forgotPassword(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("User not found", true, false, null));
+        }
+            userService.resetPassword(email, newPassword);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Password reset successfully",
+                    false,
+                    true,
+                    null));
+
+
+    }
+
     private UserResponse map(User u) {
         UserResponse r = new UserResponse();
         r.setId(u.getId());
@@ -85,4 +143,6 @@ public class AuthController {
         r.setRole(u.getRole().name());
         return r;
     }
+
+
 }

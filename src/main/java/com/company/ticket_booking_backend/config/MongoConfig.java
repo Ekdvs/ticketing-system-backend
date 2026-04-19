@@ -15,7 +15,7 @@ public class MongoConfig {
 
     @Bean
     public MongoClient mongoClient() {
-        System.out.println("Mongo URI = " + mongoUri);
+        //System.out.println("Mongo URI = " + mongoUri);
         return MongoClients.create(mongoUri);
     }
 

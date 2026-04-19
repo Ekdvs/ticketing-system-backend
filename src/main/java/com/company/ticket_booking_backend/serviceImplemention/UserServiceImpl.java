@@ -5,10 +5,12 @@ import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.repository.UserRepository;
 import com.company.ticket_booking_backend.security.JwtUtil;
+import com.company.ticket_booking_backend.service.CloudinaryService;
 import com.company.ticket_booking_backend.service.EmailService;
 import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -20,13 +22,15 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(16);
     private final EmailService emailService;
+    private final CloudinaryService cloudinaryService;
 
     public UserServiceImpl(UserRepository userRepository,
                            JwtUtil jwtUtil,
-                           EmailService emailService) {
+                           EmailService emailService, CloudinaryService cloudinaryService) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.emailService = emailService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -145,13 +149,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(String userId, User updatedUser) {
+    public User updateUser(String userId, User updatedUser, MultipartFile avatarFile) {
         User user = getUserById(userId);
+        if(user == null) {
+            throw new RuntimeException("User does not exist.");
+        }
 
         if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
         if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
         if (updatedUser.getMobile() != null) user.setMobile(updatedUser.getMobile());
-        if (updatedUser.getAvatar() != null) user.setAvatar(updatedUser.getAvatar());
+
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+
+            // 🔴 Delete old avatar first
+            if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+                cloudinaryService.deleteImage(user.getAvatar());
+            }
+
+            // 🟢 Upload new avatar
+            String newImageUrl = cloudinaryService.uploadImage(avatarFile);
+            user.setAvatar(newImageUrl);
+        }
 
         return userRepository.save(user);
     }
@@ -168,6 +186,12 @@ public class UserServiceImpl implements UserService {
 
         user.setForgotPasswordOtp(otp);
         user.setForgotPasswordExpiryDate(LocalDateTime.now().plusMinutes(5));
+
+        emailService.sendEmail(
+                user.getEmail(),
+                "Password Reset OTP",
+                EmailTemplates.otpEmail(user.getFirstName(), otp)
+        );
 
         return userRepository.save(user);
     }

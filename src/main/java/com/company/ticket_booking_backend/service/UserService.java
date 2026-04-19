@@ -2,6 +2,7 @@ package com.company.ticket_booking_backend.service;
 
 import com.company.ticket_booking_backend.model.LoginResponse;
 import com.company.ticket_booking_backend.model.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface UserService {
 
     void deleteUser(String userId);
 
-    User updateUser(String userId, User updatedUser);
+    User updateUser(String userId, User updatedUser, MultipartFile avatarFile);
 
     List<User> getAllUsers();
     void verifyOtp(String email, String otp);

@@ -95,4 +95,51 @@ public class EmailTemplates {
         </html>
         """.formatted(header(), name, url, footer());
     }
+
+    // ================= OTP EMAIL =================
+    public static String otpEmail(String name, String otp) {
+
+        return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Email Verification</title>
+    </head>
+    <body style="margin:0; padding:0; font-family:Arial; background:#f4f4f7;">
+
+        <div style="max-width:600px; margin:40px auto; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+
+            %s
+
+            <div style="padding:30px 20px; text-align:center; color:#333;">
+                <h2 style="color:#007BFF;">Hello, %s!</h2>
+
+                <p>Welcome to <b>Clinic Management System</b>.</p>
+
+                <p>Use the OTP below to verify your email:</p>
+
+                <div style="
+                    font-size:32px;
+                    font-weight:bold;
+                    letter-spacing:6px;
+                    margin:20px 0;
+                    color:#28a745;
+                ">
+                    %s
+                </div>
+
+                <p>This OTP is valid for <b>5 minutes</b>.</p>
+
+                <p>If you didn’t request this, please ignore this email.</p>
+            </div>
+
+            %s
+
+        </div>
+
+    </body>
+    </html>
+    """.formatted(header(), name, otp, footer());
+    }
 }
