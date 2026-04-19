@@ -15,7 +15,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://stu0752678:rg2a8kWUOtzG3BCd@cluster0.kughe.mongodb.net/ticketdb?retryWrites=true&w=majority
+      uri: ${MONGO_URI}
       write-concern: ACKNOWLEDGED
 
 server:
@@ -33,6 +33,9 @@ cloudinary:
 payhere:
   merchant-id: ${PAYHERE_MERCHANT_ID}
   merchant-secret: ${PAYHERE_MERCHANT_SECRET}
+
+dotenv:
+  ignoreIfMissing: false
 
 logging:
   level:
