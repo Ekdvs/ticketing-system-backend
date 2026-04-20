@@ -105,4 +105,30 @@ public class UserController {
                 new ApiResponse<>("User updated successfully", false, true, updated)
         );
     }
+
+    // ================= Update User Status =================
+    @PutMapping("/status-change")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<String>> statusChange(
+            @RequestParam String email,
+            @RequestParam User.Status newStatus)
+    {
+        userService.statusChange(email, newStatus);
+        return ResponseEntity.ok(
+                new ApiResponse<>("User status updated", false, true, null)
+        );
+    }
+
+    // ================= Update User Role =================
+    @PutMapping("/role-change")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<String>> roleChange(
+            @RequestParam String email,
+            @RequestParam User.Role newRole)
+    {
+        userService.roleChange(email, newRole);
+        return ResponseEntity.ok(
+                new ApiResponse<>("User role updated", false, true, null)
+        );
+    }
 }

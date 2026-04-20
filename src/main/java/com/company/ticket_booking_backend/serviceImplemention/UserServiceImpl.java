@@ -80,6 +80,10 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Incorrect password.");
         }
 
+        if(user.getStatus()== User.Status.INACTIVE) {
+            throw new RuntimeException("Your account is inactive. Please Contact Admin");
+        }
+
         user.setLastLoginDate(LocalDateTime.now());
         return userRepository.save(user);
     }
@@ -218,6 +222,27 @@ public class UserServiceImpl implements UserService {
     public void resetPassword(String email, String newPassword) {
         User user = getUserByEmail(email);
         user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void statusChange(String email, User.Status newStatus) {
+        User user = getUserByEmail(email);
+        if(user == null) {
+            throw new RuntimeException("User does not exist.");
+        }
+        user.setStatus(newStatus);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void roleChange(String email,User.Role newRole){
+        User user = getUserByEmail(email);
+        if(user == null) {
+            throw new RuntimeException("User does not exist.");
+        }
+
+        user.setRole(newRole);
         userRepository.save(user);
     }
 }

@@ -22,7 +22,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         try {
             Map uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
-                    ObjectUtils.asMap("folder", "avatars")
+                    ObjectUtils.asMap("folder", "ticket-booking-site")
             );
 
             return uploadResult.get("secure_url").toString();

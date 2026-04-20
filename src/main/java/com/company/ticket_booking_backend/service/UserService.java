@@ -28,4 +28,7 @@ public interface UserService {
 
 
     LoginResponse refreshToken(String refreshToken);
+
+    void statusChange(String email, User.Status newStatus);
+    void roleChange(String email, User.Role newRole);
 }
