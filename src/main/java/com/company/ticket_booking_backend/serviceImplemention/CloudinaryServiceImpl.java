@@ -51,7 +51,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         String[] parts = imageUrl.split("/");
         String fileName = parts[parts.length - 1]; // abc.jpg
 
-        String publicId = "avatars/" + fileName.substring(0, fileName.lastIndexOf("."));
+        String publicId = "ticket-booking-site/" + fileName.substring(0, fileName.lastIndexOf("."));
 
         return publicId;
     }

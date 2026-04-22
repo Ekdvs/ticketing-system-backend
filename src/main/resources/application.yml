@@ -31,11 +31,15 @@ cloudinary:
   api-secret: ${CLOUDINARY_API_SECRET}
 
 payhere:
-  merchant-id: ${PAYHERE_MERCHANT_ID}
-  merchant-secret: ${PAYHERE_MERCHANT_SECRET}
+  merchant:
+    id: ${MERCHANT_ID}
+    secret: ${MERCHANT_SECRET}
 
 dotenv:
   ignoreIfMissing: false
+
+qr:
+  secret: ${QR_SECRET}
 
 logging:
   level:

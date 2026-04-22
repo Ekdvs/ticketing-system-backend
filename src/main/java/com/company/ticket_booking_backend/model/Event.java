@@ -28,6 +28,7 @@ public class Event {
     private int availableTickets;
     private List<String> imageUrls;
     private boolean active = true;
+    private String organizerId;
 
     public void initializeTickets() {
         if (this.availableTickets == 0) {
@@ -37,6 +38,14 @@ public class Event {
 
     //getter and setter
 
+
+    public String getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
+    }
 
     public String getId() {
         return id;
@@ -148,5 +157,8 @@ public class Event {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public void initialize() {
     }
 }
