@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerificationToken(token);
         User savedUser= userRepository.save(user);
 
-        String link = "http://localhost:8080/api/auth/verify-email/" + token;
+        String link = "https://ticket-booking-backend-j5wu.onrender.com/api/auth/verify-email/" + token;
         emailService.sendEmail(
                 savedUser.getEmail(),
                 "Verify Your Email",
