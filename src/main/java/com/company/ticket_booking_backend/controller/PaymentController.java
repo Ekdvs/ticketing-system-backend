@@ -37,6 +37,12 @@ public class PaymentController {
     @Value("${payhere.merchant.secret}")
     private String MERCHANT_SECRET;
 
+    @Value("${FRONTEND_URL}")
+    private String FRONTEND_URL;
+
+    @Value("${BACKEND_URL}")
+    private String BACKEND_URL;
+
     // ================= CREATE PAYMENT =================
     @PostMapping("/create")
     public Map<String, Object> createPayment(@RequestParam String bookingId) {
@@ -59,12 +65,14 @@ public class PaymentController {
                 "LKR"
         );
 
+
+
         Map<String, Object> payHere = new HashMap<>();
 
         payHere.put("merchant_id", MERCHANT_ID);
-        payHere.put("return_url", "http://localhost:3000/success");
-        payHere.put("cancel_url", "http://localhost:3000/cancel");
-        payHere.put("notify_url", "http://localhost:8080/api/payments/notify");
+        payHere.put("return_url", FRONTEND_URL + "/success");
+        payHere.put("cancel_url", FRONTEND_URL + "/cancel");
+        payHere.put("notify_url", BACKEND_URL + "/api/payments/notify");
 
         payHere.put("order_id", booking.getBookingId());
         payHere.put("items", "Event Ticket Booking");
@@ -92,23 +100,64 @@ public class PaymentController {
 
         System.out.println("STEP 0: Notify received -> " + params);
 
-        // ✅ SUCCESS PAYMENT
-        if ("2".equals(statusCode)) {
-            System.out.println("STEP 1: Payment SUCCESS");
-
-            Booking booking = bookingService.updatePaymentSuccess(orderId, paymentId);
-
-            System.out.println("STEP 2: Booking updated");
-            // 🎟 Generate ticket after payment success
-            ticketService.generateFullTicket(booking);
-            System.out.println("STEP 3: Ticket generation called");
-
-            System.out.println("Payment SUCCESS for booking: " + orderId);
-        } else {
-            System.out.println("Payment FAILED or PENDING: " + orderId);
+        if (orderId == null || statusCode == null) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse("Invalid payment data", true, false, null));
         }
 
-        return ResponseEntity.ok(new ApiResponse("Payment notification received", false, true, null));
+        switch (statusCode) {
+
+            case "2": // ✅ SUCCESS
+                System.out.println("STEP 1: Payment SUCCESS");
+
+                Booking booking = bookingService.updatePaymentSuccess(orderId, paymentId);
+
+                System.out.println("STEP 2: Booking updated");
+
+                ticketService.generateFullTicket(booking);
+
+                System.out.println("STEP 3: Ticket generated");
+
+                break;
+
+            case "0": // ⏳ PENDING
+                System.out.println("Payment PENDING: " + orderId);
+
+                bookingService.updatePaymentPending(orderId);
+
+                break;
+
+            case "-1": // ❌ CANCELED
+                System.out.println("Payment CANCELED: " + orderId);
+
+                bookingService.updatePaymentCanceled(orderId);
+
+                break;
+
+            case "-2": // ❌ FAILED
+                System.out.println("Payment FAILED: " + orderId);
+
+                bookingService.updatePaymentFailed(orderId);
+
+                break;
+
+            case "-3": // ⚠️ CHARGEBACK
+                System.out.println("Payment CHARGEBACK: " + orderId);
+
+                bookingService.updatePaymentChargeback(orderId);
+
+                // 🔥 Optional: revoke ticket if already issued
+                ticketService.revokeTicket(orderId);
+
+                break;
+
+            default:
+                System.out.println("Unknown payment status: " + statusCode);
+        }
+
+        return ResponseEntity.ok(
+                new ApiResponse("Payment notification processed", false, true, null)
+        );
     }
 
     // ================= HASH GENERATOR =================

@@ -3,6 +3,7 @@ package com.company.ticket_booking_backend.model;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -15,14 +16,17 @@ public class Booking {
     private String id;
 
     private String eventId;
+    @Indexed(unique = true)
     private String bookingId;
     private String userId;
 
     private int quantity;
     private double totalPrice;
 
+
     private String paymentStatus; //
     private String paymentId;
+
 
     private String ticketStatus;
 
@@ -34,32 +38,10 @@ public class Booking {
     private String ticketUrl;
 
 
+
+
     //getter setter generate
 
-
-    public String getTicketUrl() {
-        return ticketUrl;
-    }
-
-    public void setTicketUrl(String ticketUrl) {
-        this.ticketUrl = ticketUrl;
-    }
-
-    public LocalDateTime getScannedAt() {
-        return scannedAt;
-    }
-
-    public void setScannedAt(LocalDateTime scannedAt) {
-        this.scannedAt = scannedAt;
-    }
-
-    public String getScannedBy() {
-        return scannedBy;
-    }
-
-    public void setScannedBy(String scannedBy) {
-        this.scannedBy = scannedBy;
-    }
 
     public String getId() {
         return id;
@@ -140,4 +122,30 @@ public class Booking {
     public void setTicketUsed(boolean ticketUsed) {
         this.ticketUsed = ticketUsed;
     }
+
+    public LocalDateTime getScannedAt() {
+        return scannedAt;
+    }
+
+    public void setScannedAt(LocalDateTime scannedAt) {
+        this.scannedAt = scannedAt;
+    }
+
+    public String getScannedBy() {
+        return scannedBy;
+    }
+
+    public void setScannedBy(String scannedBy) {
+        this.scannedBy = scannedBy;
+    }
+
+    public String getTicketUrl() {
+        return ticketUrl;
+    }
+
+    public void setTicketUrl(String ticketUrl) {
+        this.ticketUrl = ticketUrl;
+    }
+
 }
+

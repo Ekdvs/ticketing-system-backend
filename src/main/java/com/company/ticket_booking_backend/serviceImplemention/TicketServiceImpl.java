@@ -42,7 +42,7 @@ public class TicketServiceImpl implements TicketService {
             String pdfUrl = cloudinaryService.uploadPdf(pdf, booking.getBookingId());
 
             booking.setTicketUrl(pdfUrl);
-            //System.out.println("PDF URL: " + pdfUrl);
+            System.out.println("PDF URL: " + pdfUrl);
 
             bookingRepository.save(booking);
 
@@ -57,5 +57,25 @@ public class TicketServiceImpl implements TicketService {
             System.out.println("Error generating ticket: " + e.getMessage());
             throw new RuntimeException("Ticket generation failed", e);
         }
+    }
+    @Override
+    public void revokeTicket(String bookingId) {
+
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // If already revoked, do nothing (idempotent)
+        if ("REVOKED".equals(booking.getTicketStatus())) {
+            return;
+        }
+
+        booking.setTicketStatus("REVOKED");
+
+        // Optional: mark ticket as unusable
+        booking.setTicketUsed(true);
+
+        bookingRepository.save(booking);
+
+        System.out.println("Ticket revoked for booking: " + bookingId);
     }
 }

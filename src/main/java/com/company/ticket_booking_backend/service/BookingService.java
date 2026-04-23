@@ -10,4 +10,13 @@ public interface BookingService {
     Booking getBookingById(String bookingId);
 
     Booking updatePaymentSuccess(String bookingId, String paymentId);
+    void updatePaymentPending(String bookingId);
+
+    void updatePaymentCanceled(String bookingId);
+
+    void updatePaymentFailed(String bookingId);
+
+    //void updatePaymentChargedback(String orderId);
+
+    void updatePaymentChargeback(String orderId);
 }
