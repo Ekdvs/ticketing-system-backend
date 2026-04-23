@@ -1,5 +1,5 @@
 
-name: Build and Push Docker image to Docker Hub
+name: Build and Push Docker image to Docker Hub for my backend application
 
 on: push
 
