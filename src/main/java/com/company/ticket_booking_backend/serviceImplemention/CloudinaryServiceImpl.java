@@ -44,6 +44,24 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         }
     }
 
+    @Override
+    public String uploadPdf(byte[] pdfBytes, String fileName) {
+        try {
+            Map uploadResult = cloudinary.uploader().upload(
+                    pdfBytes,
+                    ObjectUtils.asMap(
+                            "resource_type", "raw",
+                            "public_id", "ticket-booking-site/" + fileName
+                    )
+            );
+
+            return uploadResult.get("secure_url").toString();
+
+        } catch (Exception e) {
+            throw new RuntimeException("PDF upload failed: " + e.getMessage());
+        }
+    }
+
     // 🔥 Extract public_id from URL
     private String extractPublicId(String imageUrl) {
 

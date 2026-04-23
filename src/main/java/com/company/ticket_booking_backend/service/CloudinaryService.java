@@ -5,4 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 public interface CloudinaryService {
     String uploadImage(MultipartFile file);
     void deleteImage(String imageUrl);
+
+    String uploadPdf(byte[] pdfBytes, String fileName);
 }

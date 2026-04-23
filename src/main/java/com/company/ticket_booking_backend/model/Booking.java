@@ -31,9 +31,19 @@ public class Booking {
     private LocalDateTime scannedAt;
     private String scannedBy;
 
+    private String ticketUrl;
+
 
     //getter setter generate
 
+
+    public String getTicketUrl() {
+        return ticketUrl;
+    }
+
+    public void setTicketUrl(String ticketUrl) {
+        this.ticketUrl = ticketUrl;
+    }
 
     public LocalDateTime getScannedAt() {
         return scannedAt;

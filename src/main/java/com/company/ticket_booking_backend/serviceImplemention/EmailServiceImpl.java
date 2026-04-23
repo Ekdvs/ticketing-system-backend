@@ -1,5 +1,6 @@
 package com.company.ticket_booking_backend.serviceImplemention;
 
+import com.company.ticket_booking_backend.EmailTemplates.EmailTemplates;
 import com.company.ticket_booking_backend.model.Booking;
 import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.service.EmailService;
@@ -48,7 +49,7 @@ public class EmailServiceImpl implements EmailService {
 
     // 🎟 SEND PDF TICKET
     @Override
-    public void sendTicket(String toEmail, Booking booking, byte[] pdf) {
+    public void sendTicket(String toEmail,String name, Booking booking, byte[] pdf) {
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -57,12 +58,14 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Your Event Ticket 🎟");
 
-            helper.setText(
-                    "<h2>Booking Confirmed</h2>" +
-                            "<p>Booking ID: " + booking.getBookingId() + "</p>" +
-                            "<p>Thank you for your purchase!</p>",
-                    true
+
+
+            String html = EmailTemplates.ticketEmail(
+                    name,
+                    booking // 🔥 Cloudinary URL
             );
+
+            helper.setText(html, true);
 
             helper.addAttachment("ticket.pdf", new ByteArrayResource(pdf));
 
