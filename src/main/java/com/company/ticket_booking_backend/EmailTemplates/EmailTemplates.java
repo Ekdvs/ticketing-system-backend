@@ -117,7 +117,7 @@ public class EmailTemplates {
             <div style="padding:30px 20px; text-align:center; color:#333;">
                 <h2 style="color:#007BFF;">Hello, %s!</h2>
 
-                <p>Welcome to <b>Clinic Management System</b>.</p>
+                <p>Welcome to <b>Ticket Booking System</b>.</p>
 
                 <p>Use the OTP below to verify your email:</p>
 

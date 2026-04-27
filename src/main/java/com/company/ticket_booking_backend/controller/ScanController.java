@@ -36,10 +36,10 @@ public class ScanController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<String>> scan(@RequestBody Map<String, String> request) {
-        String scanneremail = (String) SecurityContextHolder
+        String scanneremail = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                .getPrincipal();
+                .getName();
 
         User scanner = userRepository.findByEmail(scanneremail)
                 .orElseThrow(() -> new RuntimeException("User not found"));

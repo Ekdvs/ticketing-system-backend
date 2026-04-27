@@ -8,9 +8,14 @@ import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.CloudinaryService;
 import com.company.ticket_booking_backend.service.EmailService;
 import com.company.ticket_booking_backend.service.UserService;
+import org.springframework.http.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -245,4 +250,68 @@ public class UserServiceImpl implements UserService {
         user.setRole(newRole);
         userRepository.save(user);
     }
+
+    @Override
+    public User googleLogin(String accessToken) {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        String url = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                Map.class
+        );
+
+        Map body = response.getBody();
+
+        if (body == null || body.get("email") == null) {
+            throw new RuntimeException("Invalid Google token");
+        }
+
+        String email = (String) body.get("email");
+        String fullName = (String) body.get("name");
+
+        return userRepository.findByEmail(email)
+                .map(existing -> {
+                    existing.setLastLoginDate(LocalDateTime.now());
+                    return userRepository.save(existing);
+                })
+                .orElseGet(() -> {
+
+                    // 🔥 FIX: parse name INSIDE lambda (no duplicate variables issue)
+                    String firstName = "";
+                    String lastName = "";
+
+                    if (fullName != null) {
+                        String[] parts = fullName.split(" ");
+                        firstName = parts[0];
+                        if (parts.length > 1) {
+                            lastName = parts[1];
+                        }
+                    }
+
+                    User newUser = User.builder()
+                            .email(email)
+                            .firstName(firstName)
+                            .lastName(lastName)
+                            .provider("GOOGLE")
+                            .verifyEmail(true)
+                            .avatar(body.get("picture") != null ? (String) body.get("picture") : "")
+                            .role(User.Role.USER)
+                            .lastLoginDate(LocalDateTime.now())
+                            .build();
+
+                    return userRepository.save(newUser);
+                });
+    }
+
+
 }

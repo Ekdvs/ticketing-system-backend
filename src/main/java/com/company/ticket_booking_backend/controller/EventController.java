@@ -3,7 +3,9 @@ package com.company.ticket_booking_backend.controller;
 import com.company.ticket_booking_backend.model.ApiResponse;
 import com.company.ticket_booking_backend.model.Category;
 import com.company.ticket_booking_backend.model.Event;
+import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.service.EventService;
+import com.company.ticket_booking_backend.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,32 +22,45 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/api/event")
+@CrossOrigin("*")
 public class EventController {
 
     @Autowired
-    private ObjectMapper objectMapper;
-    private final EventService eventService;
+    private EventService eventService;
 
-    public EventController(EventService eventService , ObjectMapper objectMapper) {
-        this.eventService = eventService;
-        this.objectMapper = objectMapper;
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // ================= GET CURRENT USER =================
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userService.getUserByEmail(email);
     }
 
-    // ================= CREATE EVENT (MULTI IMAGE) =================
+    // ================= CREATE EVENT =================
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
-    public ResponseEntity<ApiResponse<Event>> createEvent(@RequestPart("event") String eventJson , @RequestPart(value="images", required = false) List<MultipartFile> images) throws JsonProcessingException {
+    public ResponseEntity<ApiResponse<Event>> createEvent(
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) throws JsonProcessingException {
 
         Event event = objectMapper.readValue(eventJson, Event.class);
 
-        Event newEvent = eventService.createEvent(event, images);
+        User user = getCurrentUser();
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>("Event created successfully", false, true, newEvent));
+        // 🔥 ALWAYS FORCE ORGANIZER ID FROM TOKEN (NOT FRONTEND)
+        event.setOrganizerId(user.getId());
 
+        Event saved = eventService.createEvent(event, images);
 
+        return ResponseEntity.status(201).body(
+                new ApiResponse<>("Event created", false, true, saved)
+        );
     }
 
     // ================= GET EVENT BY ID =================
@@ -61,49 +77,72 @@ public class EventController {
     // ================= EVENT DELETE BY ID =================
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
-    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable("id") String id){
-        System.out.println();
-        if(id==null){
-            return new ResponseEntity<>(new ApiResponse<>("Event not found", false, false, null), HttpStatus.NOT_FOUND);
-        }
-        Event event = eventService.getEventById(id);
-        if(event==null){
-            return new ResponseEntity<>(new ApiResponse<>("Event not found", false, false, null), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable String id) {
 
+        Event existing = eventService.getEventById(id);
+        User user = getCurrentUser();
+
+        if (!existing.getOrganizerId().equals(user.getId())
+                && !user.getRole().equals("ADMIN")) {
+            return ResponseEntity.status(403)
+                    .body(new ApiResponse<>("Forbidden", true, false, null));
         }
+
         eventService.deleteEvent(id);
-        return ResponseEntity.ok(new ApiResponse<>("Event deleted successfully", false, true, null));
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Deleted", false, true, null)
+        );
     }
 
     // ================= EVENT ACTIVE /INACTIVE =================
     @PatchMapping("/toggle-active/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
-    public ResponseEntity<ApiResponse<Void>> toggleEventActive(@PathVariable("id") String id){
-        if(id==null){
-            return new ResponseEntity<>(new ApiResponse<>("Event not found", false, false, null), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiResponse<Event>> toggle(@PathVariable String id) {
 
+        Event existing = eventService.getEventById(id);
+        User user = getCurrentUser();
+
+        if (!existing.getOrganizerId().equals(user.getId())
+                && !user.getRole().equals("ADMIN")) {
+            return ResponseEntity.status(403)
+                    .body(new ApiResponse<>("Forbidden", true, false, null));
         }
-        Event event = eventService.getEventById(id);
-        if(event==null){
-            return new ResponseEntity<>(new ApiResponse<>("Event not found", false, false, null), HttpStatus.NOT_FOUND);
 
-        }
+        Event updated = eventService.toggleActive(id);
 
-        eventService.toggleActive(id);
-        return ResponseEntity.ok(new ApiResponse<>("Event updated successfully", false, true, null));
+        return ResponseEntity.ok(
+                new ApiResponse<>("Toggled", false, true, updated)
+        );
     }
 
     // ================= EVENT ACTIVE /INACTIVE =================
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
-    public ResponseEntity<ApiResponse<Event>> updateEvent(@PathVariable("id") String id , @RequestPart("event") String eventJson , @RequestPart(value="images", required = false) List<MultipartFile> images) throws JsonProcessingException {
-        if (id == null) {
-            return new ResponseEntity<>(new ApiResponse<>("Event not found", false, false, null), HttpStatus.NOT_FOUND);
-        }
-        Event event = objectMapper.readValue(eventJson, Event.class);
+    public ResponseEntity<ApiResponse<Event>> updateEvent(
+            @PathVariable String id,
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) throws JsonProcessingException {
 
-        Event updateEvent =eventService.updateEvent(id, event, images);
-        return ResponseEntity.ok(new ApiResponse<>("Event updated successfully", false, true, updateEvent ));
+        Event existing = eventService.getEventById(id);
+
+        User user = getCurrentUser();
+
+        // 🔥 SECURITY CHECK: organizer can only update own event
+        if (!existing.getOrganizerId().equals(user.getId())
+                && !user.getRole().equals("ADMIN")) {
+            return ResponseEntity.status(403)
+                    .body(new ApiResponse<>("Forbidden", true, false, null));
+        }
+
+        Event updated = objectMapper.readValue(eventJson, Event.class);
+
+        Event saved = eventService.updateEvent(id, updated, images);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Updated", false, true, saved)
+        );
     }
 
     @GetMapping("/search")
@@ -137,6 +176,30 @@ public class EventController {
     ) {
         Page<Event> events = eventService.getAllEvents(page, size);
         return ResponseEntity.ok(new ApiResponse<>("Events retrieved successfully", false, true, events));
+    }
+
+    // ================= GET ALL EVENT CALENDER =================
+    @GetMapping("/calendar")
+    public ResponseEntity<ApiResponse<List<Event>>> getCalendarEvents() {
+
+        List<Event> events = eventService.getAllEvents(0, 1000).getContent();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Calendar events", false, true, events)
+        );
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
+    public ResponseEntity<ApiResponse<List<Event>>> getMyEvents() {
+
+        User user = getCurrentUser();
+
+        List<Event> events = eventService.getByOrganizerId(user.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("My events", false, true, events)
+        );
     }
 
 

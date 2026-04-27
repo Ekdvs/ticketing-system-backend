@@ -1,10 +1,7 @@
 package com.company.ticket_booking_backend.controller;
 
 import com.company.ticket_booking_backend.model.*;
-import com.company.ticket_booking_backend.repository.BookingRepository;
-import com.company.ticket_booking_backend.repository.EntryLogRepository;
-import com.company.ticket_booking_backend.repository.EventRepository;
-import com.company.ticket_booking_backend.repository.UserRepository;
+import com.company.ticket_booking_backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,14 +26,16 @@ public class OrganizerDashboardController {
     @Autowired private EntryLogRepository entryLogRepository;
     @Autowired private EventRepository eventRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired
+    private OrganizerEarningRepository earningRepository;
 
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getStats() {
 
-        String organizeremail = (String) SecurityContextHolder
+        String organizeremail = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                .getPrincipal();
+                .getName(); // ✅ FIXED (better than getPrincipal)
 
         User organizer = userRepository.findByEmail(organizeremail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -57,14 +56,19 @@ public class OrganizerDashboardController {
                 .filter(l -> eventIds.contains(l.getEventId()))
                 .toList();
 
-        double revenue = bookings.stream()
-                .mapToDouble(Booking::getTotalPrice)
+        // ✅ ADD THIS (MISSING PART)
+        List<OrganizerEarning> earnings = earningRepository.findByOrganizerId(organizer.getId());
+
+        // ✅ CORRECT revenue (after platform fee)
+        double revenue = earnings.stream()
+                .mapToDouble(OrganizerEarning::getOrganizerAmount)
                 .sum();
 
         Map<String, Object> data = new HashMap<>();
         data.put("totalRevenue", revenue);
         data.put("totalBookings", bookings.size());
         data.put("totalScans", logs.size());
+        data.put("totalEarningsRecords", earnings.size()); // optional
 
         return ResponseEntity.ok(
                 new ApiResponse<>("Organizer Stats", false, true, data)
@@ -125,4 +129,109 @@ public class OrganizerDashboardController {
                 new ApiResponse<>("Organizer event chart", false, true, result)
         );
     }
+
+    @GetMapping("/earnings")
+    public ResponseEntity<ApiResponse<List<OrganizerEarning>>> getEarnings() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<OrganizerEarning> earnings = earningRepository.findByOrganizerId(organizer.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Organizer earnings", false, true, earnings)
+        );
+    }
+
+    @GetMapping("/daily-revenue")
+    public ResponseEntity<ApiResponse<List<RevenueChartDTO>>> getDailyRevenue() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow();
+
+        List<OrganizerEarning> earnings =
+                earningRepository.findByOrganizerId(organizer.getId());
+
+        Map<String, Double> grouped = earnings.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getCreatedAt().toLocalDate().toString(),
+                        Collectors.summingDouble(OrganizerEarning::getOrganizerAmount)
+                ));
+
+        List<RevenueChartDTO> result = grouped.entrySet()
+                .stream()
+                .map(e -> new RevenueChartDTO(e.getKey(), e.getValue()))
+                .sorted((a, b) -> a.getLabel().compareTo(b.getLabel()))
+                .toList();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Daily revenue", false, true, result)
+        );
+    }
+
+    @GetMapping("/monthly-revenue")
+    public ResponseEntity<ApiResponse<List<RevenueChartDTO>>> getMonthlyRevenue() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow();
+
+        List<OrganizerEarning> earnings =
+                earningRepository.findByOrganizerId(organizer.getId());
+
+        Map<String, Double> grouped = earnings.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getCreatedAt().getYear() + "-" + e.getCreatedAt().getMonthValue(),
+                        Collectors.summingDouble(OrganizerEarning::getOrganizerAmount)
+                ));
+
+        List<RevenueChartDTO> result = grouped.entrySet()
+                .stream()
+                .map(e -> new RevenueChartDTO(e.getKey(), e.getValue()))
+                .sorted((a, b) -> a.getLabel().compareTo(b.getLabel()))
+                .toList();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Monthly revenue", false, true, result)
+        );
+    }
+
+    @GetMapping("/earning-summary")
+    public ResponseEntity<ApiResponse<Map<String, Double>>> getSummary() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow();
+
+        List<OrganizerEarning> earnings =
+                earningRepository.findByOrganizerId(organizer.getId());
+
+        double paid = earnings.stream()
+                .filter(OrganizerEarning::isPaid)
+                .mapToDouble(OrganizerEarning::getOrganizerAmount)
+                .sum();
+
+        double pending = earnings.stream()
+                .filter(e -> !e.isPaid())
+                .mapToDouble(OrganizerEarning::getOrganizerAmount)
+                .sum();
+
+        Map<String, Double> data = new HashMap<>();
+        data.put("paid", paid);
+        data.put("pending", pending);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Earning summary", false, true, data)
+        );
+    }
+
+
+
+
 }

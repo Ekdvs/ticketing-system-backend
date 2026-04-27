@@ -1,9 +1,6 @@
 package com.company.ticket_booking_backend.serviceImplemention;
 
-import com.company.ticket_booking_backend.model.Category;
-import com.company.ticket_booking_backend.model.Event;
-import com.company.ticket_booking_backend.model.SubCategory;
-import com.company.ticket_booking_backend.model.User;
+import com.company.ticket_booking_backend.model.*;
 import com.company.ticket_booking_backend.repository.EventRepository;
 import com.company.ticket_booking_backend.service.CloudinaryService;
 import com.company.ticket_booking_backend.service.EventService;
@@ -172,4 +169,25 @@ public class EventServiceImpl implements EventService {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return eventRepository.findAll(pageable);
     }
+
+    @Override
+    public List<EventCalendarDTO> getCalendarData() {
+        return eventRepository.findAll()
+                .stream()
+                .map(e -> new EventCalendarDTO(
+                        e.getId(),
+                        e.getTitle(),
+                        e.getEventDateTime(),
+                        e.getPrice(),
+                        e.isActive(),
+                        e.getLocation()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<Event> getByOrganizerId(String organizerId) {
+        return eventRepository.findByOrganizerId(organizerId);
+    }
+
 }

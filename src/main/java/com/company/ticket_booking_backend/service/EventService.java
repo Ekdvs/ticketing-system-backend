@@ -2,6 +2,7 @@ package com.company.ticket_booking_backend.service;
 
 import com.company.ticket_booking_backend.model.Category;
 import com.company.ticket_booking_backend.model.Event;
+import com.company.ticket_booking_backend.model.EventCalendarDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,4 +34,7 @@ public interface EventService {
     );
 
     Page<Event>getAllEvents(int page, int size);
+
+    List<EventCalendarDTO> getCalendarData();
+    List<Event> getByOrganizerId(String organizerId);
 }

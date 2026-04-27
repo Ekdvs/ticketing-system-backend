@@ -14,6 +14,7 @@ public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
+
     public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
@@ -109,7 +110,7 @@ public class AuthController {
 
     }
 
-    @PostMapping("/reset-password")
+    @PutMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
 
         if(email == null || newPassword == null) {
@@ -129,6 +130,27 @@ public class AuthController {
                     true,
                     null));
 
+
+    }
+
+    // ================= GOOGLE LOGIN =================
+    @PostMapping("/google-login")
+    public ResponseEntity<ApiResponse<LoginResponse>>googleLogin(@RequestBody GoogleLoginRequest request) {
+
+        User user = userService.googleLogin(request.getAccessToken());
+
+        String accessToken = jwtUtil.generateToken(user);
+        String refreshToken = userService.createRefreshToken(user);
+
+        LoginResponse res = new LoginResponse(
+                accessToken,
+                refreshToken,
+                user.getEmail(),
+                user.getRole().name()
+        );
+        return ResponseEntity.ok(
+                new ApiResponse<>("Google login successful", false, true, res)
+        );
 
     }
 

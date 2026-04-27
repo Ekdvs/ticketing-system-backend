@@ -31,4 +31,6 @@ public interface UserService {
 
     void statusChange(String email, User.Status newStatus);
     void roleChange(String email, User.Role newRole);
+
+    User googleLogin(String accessToken);
 }

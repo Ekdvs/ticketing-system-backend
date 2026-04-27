@@ -3,6 +3,8 @@ package com.company.ticket_booking_backend.controller;
 import com.company.ticket_booking_backend.model.ApiResponse;
 import com.company.ticket_booking_backend.model.Booking;
 import com.company.ticket_booking_backend.model.User;
+import com.company.ticket_booking_backend.repository.EventRepository;
+import com.company.ticket_booking_backend.repository.OrganizerEarningRepository;
 import com.company.ticket_booking_backend.service.BookingService;
 import com.company.ticket_booking_backend.service.TicketService;
 
@@ -23,6 +25,12 @@ public class PaymentController {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private OrganizerEarningRepository earningRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
 
 
     @Autowired

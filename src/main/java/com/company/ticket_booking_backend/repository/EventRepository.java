@@ -29,5 +29,6 @@ public interface EventRepository extends MongoRepository<Event, String> {
             LocalDateTime end,
             Pageable pageable
     );
-    List <Event> findByOrganizerId(String id);
+
+    List<Event> findByOrganizerId(String organizerId);
 }

@@ -26,13 +26,14 @@ public class UserController {
     // ================= CURRENT USER =================
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<User>> me(Authentication auth) {
+        System.out.println("Fetching current user info for: " + auth);
 
         String email = auth.getName();
 
         User user = userService.getUserByEmail(email);
 
         return ResponseEntity.ok(
-                new ApiResponse<>("User fetched", false, true, user)
+                new ApiResponse<>("Welcome Back", false, true, user)
         );
     }
 
@@ -52,7 +53,7 @@ public class UserController {
     }
 
     // ================= DELETE ACCOUNT =================
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete/")
     public ResponseEntity<ApiResponse<String>> delete(Authentication auth) {
 
         String email = auth.getName();
@@ -67,7 +68,7 @@ public class UserController {
     }
 
     // ================= ALL USERS =================
-    @GetMapping("/all")
+    @GetMapping("/allusers")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<User>>> all() {
 
@@ -111,9 +112,9 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> statusChange(
             @RequestParam String email,
-            @RequestParam User.Status newStatus)
-    {
-        userService.statusChange(email, newStatus);
+            @RequestParam String newStatus
+    ) {
+        userService.statusChange(email, User.Status.valueOf(newStatus));
         return ResponseEntity.ok(
                 new ApiResponse<>("User status updated", false, true, null)
         );
