@@ -14,4 +14,5 @@ public interface OrganizerEarningRepository extends MongoRepository<OrganizerEar
             LocalDateTime start,
             LocalDateTime end
     );
+    List<OrganizerEarning> findByOrganizerIdAndPayoutStatus(String organizerId, String status);
 }

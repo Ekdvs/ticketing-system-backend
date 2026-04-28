@@ -24,7 +24,7 @@ public class OrganizerEarning {
     private double platformFee;
     private double organizerAmount;
 
-    private boolean paid; // payout status
+    private String payoutStatus; // PENDING, PAID
 
     private LocalDateTime createdAt;
 }

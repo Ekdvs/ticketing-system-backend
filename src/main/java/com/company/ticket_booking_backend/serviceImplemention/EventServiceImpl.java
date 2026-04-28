@@ -49,6 +49,8 @@ public class EventServiceImpl implements EventService {
 
         event.initialize();
 
+        event.setAvailableTickets(event.getAvailableTickets());
+
         // ✅ MULTI IMAGE UPLOAD
         if (images != null && !images.isEmpty()) {
 

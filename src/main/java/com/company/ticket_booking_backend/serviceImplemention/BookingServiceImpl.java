@@ -1,10 +1,7 @@
 package com.company.ticket_booking_backend.serviceImplemention;
 
 import com.company.ticket_booking_backend.model.*;
-import com.company.ticket_booking_backend.repository.BookingRepository;
-import com.company.ticket_booking_backend.repository.EventRepository;
-import com.company.ticket_booking_backend.repository.OrganizerEarningRepository;
-import com.company.ticket_booking_backend.repository.UserRepository;
+import com.company.ticket_booking_backend.repository.*;
 import com.company.ticket_booking_backend.service.BookingService;
 import com.company.ticket_booking_backend.service.EventService;
 import com.company.ticket_booking_backend.service.NotificationService;
@@ -33,6 +30,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private OrganizerWalletRepository walletRepository;
 
 
 
@@ -102,6 +101,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setPaymentStatus("SUCCESS");
         booking.setTicketStatus("ISSUED");
 
+
         bookingRepository.save(booking);
 
         // =============================
@@ -120,11 +120,28 @@ public class BookingServiceImpl implements BookingService {
                 .totalAmount(totalAmount)
                 .platformFee(platformFee)
                 .organizerAmount(organizerAmount)
-                .paid(false)
+                .payoutStatus("PENDING")
                 .createdAt(LocalDateTime.now())
                 .build();
 
         earningRepository.save(earning);
+
+        OrganizerWallet wallet = walletRepository
+                .findByOrganizerId(event.getOrganizerId())
+                .orElse(
+                        OrganizerWallet.builder()
+                                .organizerId(event.getOrganizerId())
+                                .totalEarnings(0)
+                                .availableBalance(0)
+                                .withdrawnAmount(0)
+                                .build()
+                );
+
+        wallet.setTotalEarnings(wallet.getTotalEarnings() + organizerAmount);
+        wallet.setAvailableBalance(wallet.getAvailableBalance() + organizerAmount);
+        wallet.setUpdatedAt(LocalDateTime.now());
+
+        walletRepository.save(wallet);
 
         // 1️⃣ Notify the USER their payment succeeded
         notificationService.sendToUser(

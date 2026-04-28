@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,8 @@ public class AdminDashboardController {
     private UserRepository userRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private OrganizerWalletRepository walletRepository;
 
 
     @GetMapping("/stats")
@@ -135,19 +138,51 @@ public class AdminDashboardController {
     }
 
 
-    @PatchMapping("/pay/{id}")
-    public ResponseEntity<ApiResponse> markAsPaid(@PathVariable String id) {
+    @PatchMapping("/pay-organizer/{organizerId}")
+    public ResponseEntity<ApiResponse> payOrganizer(@PathVariable String organizerId) {
 
-        OrganizerEarning earning = earningRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+        List<OrganizerEarning> earnings =
+                earningRepository.findByOrganizerIdAndPayoutStatus(organizerId, "PENDING");
 
-        earning.setPaid(true);
-        earningRepository.save(earning);
+        if (earnings.isEmpty()) {
+            return ResponseEntity.ok(
+                    new ApiResponse("No pending earnings", false, true, null)
+            );
+        }
+
+        double totalPayout = 0;
+
+        for (OrganizerEarning e : earnings) {
+            e.setPayoutStatus("PAID");
+            totalPayout += e.getOrganizerAmount();
+        }
+
+        earningRepository.saveAll(earnings);
+
+        // ✅ update wallet
+        OrganizerWallet wallet = walletRepository
+                .findByOrganizerId(organizerId)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        wallet.setAvailableBalance(wallet.getAvailableBalance() - totalPayout);
+        wallet.setWithdrawnAmount(wallet.getWithdrawnAmount() + totalPayout);
+        wallet.setUpdatedAt(LocalDateTime.now());
+
+        walletRepository.save(wallet);
+
+        // 🔔 notify organizer
+        notificationService.sendToOrganizer(
+                organizerId,
+                "PAYOUT_SUCCESS",
+                "Payout Completed 💰",
+                "Rs " + totalPayout + " has been transferred to your account"
+        );
 
         return ResponseEntity.ok(
-                new ApiResponse("Marked as paid", false, true, null)
+                new ApiResponse<>("Payout successful", false, true, totalPayout)
         );
     }
+
     @PatchMapping("/approve-withdraw/{id}")
     public ResponseEntity<ApiResponse> approve(@PathVariable String id) {
 
@@ -235,7 +270,7 @@ public class AdminDashboardController {
                 earningRepository.findByOrganizerId(organizer.getId());
 
         double balance = earnings.stream()
-                .filter(e -> e != null && !e.isPaid())
+                .filter(e -> e != null && "PENDING".equals(e.getPayoutStatus()))
                 .mapToDouble(OrganizerEarning::getOrganizerAmount)
                 .sum();
 

@@ -6,10 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +27,10 @@ public class OrganizerDashboardController {
     @Autowired private UserRepository userRepository;
     @Autowired
     private OrganizerEarningRepository earningRepository;
+    @Autowired
+    private OrganizerWalletRepository walletRepository;
+    @Autowired
+    private WithdrawalRepository withdrawalRepository;
 
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getStats() {
@@ -213,12 +216,12 @@ public class OrganizerDashboardController {
                 earningRepository.findByOrganizerId(organizer.getId());
 
         double paid = earnings.stream()
-                .filter(OrganizerEarning::isPaid)
+                .filter(e -> "PAID".equals(e.getPayoutStatus()))
                 .mapToDouble(OrganizerEarning::getOrganizerAmount)
                 .sum();
 
         double pending = earnings.stream()
-                .filter(e -> !e.isPaid())
+                .filter(e -> "PENDING".equals(e.getPayoutStatus()))
                 .mapToDouble(OrganizerEarning::getOrganizerAmount)
                 .sum();
 
@@ -231,7 +234,76 @@ public class OrganizerDashboardController {
         );
     }
 
+    @GetMapping("/wallet")
+    public ResponseEntity<ApiResponse<OrganizerWallet>> getWallet() {
 
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow();
 
+        OrganizerWallet wallet = walletRepository
+                .findByOrganizerId(organizer.getId())
+                .orElse(
+                        OrganizerWallet.builder()
+                                .organizerId(organizer.getId())
+                                .totalEarnings(0)
+                                .availableBalance(0)
+                                .withdrawnAmount(0)
+                                .build()
+                );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Wallet fetched", false, true, wallet)
+        );
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<ApiResponse> requestWithdraw(@RequestBody Map<String, Double> body) {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        double amount = body.get("amount");
+
+        OrganizerWallet wallet = walletRepository
+                .findByOrganizerId(organizer.getId())
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        if (wallet.getAvailableBalance() < amount) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>("Insufficient balance", true, false, null));
+        }
+
+        WithdrawalRequest request = WithdrawalRequest.builder()
+                .organizerId(organizer.getId())
+                .amount(amount)
+                .status("PENDING")
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        withdrawalRepository.save(request);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Withdrawal requested", false, true, null)
+        );
+    }
+
+    @GetMapping("/withdrawals")
+    public ResponseEntity<ApiResponse<List<WithdrawalRequest>>> getWithdrawals() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User organizer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<WithdrawalRequest> withdrawals =
+                withdrawalRepository.findByOrganizerId(organizer.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("Withdrawal list", false, true, withdrawals)
+        );
+    }
 }

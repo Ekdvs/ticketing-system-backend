@@ -47,7 +47,14 @@ public class ScanController {
 
         try {
             // 🔐 Validate JWT
+
             String token = request.get("token");
+
+            if (token == null || token.isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        new ApiResponse<>("Missing QR token", true, false, null)
+                );
+            }
             Claims claims = QRTokenUtil.validateToken(token);
 
             String bookingId = claims.get("bookingId", String.class);
