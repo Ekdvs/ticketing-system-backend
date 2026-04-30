@@ -7,6 +7,7 @@ import com.company.ticket_booking_backend.service.EventService;
 import com.company.ticket_booking_backend.service.NotificationService;
 import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,7 @@ public class BookingServiceImpl implements BookingService {
 
         //get user
         User user = userService.getUserByEmail(userId);
+
         if(booking.getQuantity()>event.getAvailableTickets()){
             throw new RuntimeException("Not enough tickets available");
 
@@ -57,6 +59,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setPaymentStatus("PENDING");
         booking.setTicketStatus("PENDING");
         booking.setUserId(user.getId());
+        booking.setCreatedAt(LocalDateTime.now());
         booking.setTicketUsed(false);
 
         // 🔥 CALCULATE PRICE (IMPORTANT FIX)
@@ -219,6 +222,11 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setPaymentStatus(String.valueOf(PaymentStatus.CHARGEDBACK));
         bookingRepository.save(booking);
+    }
+
+    @Override
+    public List<Booking> getBookingsByUserId(String userId) {
+        return bookingRepository.findByUserId(userId,Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
 

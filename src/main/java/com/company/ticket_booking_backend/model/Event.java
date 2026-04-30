@@ -160,5 +160,10 @@ public class Event {
     }
 
     public void initialize() {
+        this.createdAt = LocalDateTime.now();
+
+        if (this.availableTickets == 0) {
+            this.availableTickets = this.totalTickets;
+        }
     }
 }

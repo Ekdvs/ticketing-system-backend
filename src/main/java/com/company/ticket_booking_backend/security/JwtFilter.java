@@ -38,7 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 path.startsWith("/api/user/login") ||
                 path.startsWith("/api/user/register") ||
                 path.startsWith("/api/user/verify-email")||
-                path.startsWith("/api/payments/notify");
+                path.startsWith("/api/payments/notify")||
+                path.startsWith("/api/meta/categories");
     }
 
     @Override

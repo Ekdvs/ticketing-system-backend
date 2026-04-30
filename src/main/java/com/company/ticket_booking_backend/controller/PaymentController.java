@@ -106,7 +106,7 @@ public class PaymentController {
         String statusCode = params.get("status_code");
         String paymentId = params.get("payment_id");
 
-        System.out.println("STEP 0: Notify received -> " + params);
+        //System.out.println("STEP 0: Notify received -> " + params);
 
         if (orderId == null || statusCode == null) {
             return ResponseEntity.badRequest()
@@ -116,41 +116,41 @@ public class PaymentController {
         switch (statusCode) {
 
             case "2": // ✅ SUCCESS
-                System.out.println("STEP 1: Payment SUCCESS");
+                //System.out.println("STEP 1: Payment SUCCESS");
 
                 Booking booking = bookingService.updatePaymentSuccess(orderId, paymentId);
 
-                System.out.println("STEP 2: Booking updated");
+                //System.out.println("STEP 2: Booking updated");
 
                 ticketService.generateFullTicket(booking);
 
-                System.out.println("STEP 3: Ticket generated");
+                //System.out.println("STEP 3: Ticket generated");
 
                 break;
 
             case "0": // ⏳ PENDING
-                System.out.println("Payment PENDING: " + orderId);
+                //System.out.println("Payment PENDING: " + orderId);
 
                 bookingService.updatePaymentPending(orderId);
 
                 break;
 
             case "-1": // ❌ CANCELED
-                System.out.println("Payment CANCELED: " + orderId);
+                //System.out.println("Payment CANCELED: " + orderId);
 
                 bookingService.updatePaymentCanceled(orderId);
 
                 break;
 
             case "-2": // ❌ FAILED
-                System.out.println("Payment FAILED: " + orderId);
+                //System.out.println("Payment FAILED: " + orderId);
 
                 bookingService.updatePaymentFailed(orderId);
 
                 break;
 
             case "-3": // ⚠️ CHARGEBACK
-                System.out.println("Payment CHARGEBACK: " + orderId);
+                //System.out.println("Payment CHARGEBACK: " + orderId);
 
                 bookingService.updatePaymentChargeback(orderId);
 
@@ -160,7 +160,7 @@ public class PaymentController {
                 break;
 
             default:
-                System.out.println("Unknown payment status: " + statusCode);
+                //System.out.println("Unknown payment status: " + statusCode);
         }
 
         return ResponseEntity.ok(

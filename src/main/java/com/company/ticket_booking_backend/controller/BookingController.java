@@ -2,7 +2,10 @@ package com.company.ticket_booking_backend.controller;
 
 import com.company.ticket_booking_backend.model.ApiResponse;
 import com.company.ticket_booking_backend.model.Booking;
+import com.company.ticket_booking_backend.model.User;
+import com.company.ticket_booking_backend.repository.UserRepository;
 import com.company.ticket_booking_backend.service.BookingService;
+import com.company.ticket_booking_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +20,9 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
 
@@ -58,4 +64,19 @@ public class BookingController {
 
         return ResponseEntity.ok(new ApiResponse("All bookings found", true, true, bookingList));
     }
+
+    // ================= GET ALL USER BOOKING=================
+    @GetMapping("/my-tickets")
+    public ResponseEntity<ApiResponse<List<Booking>>> getMyTickets() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        List<Booking> bookings = bookingService.getBookingsByUserId(user.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>("User Bookings", false, true, bookings)
+        );
+    }
+
 }

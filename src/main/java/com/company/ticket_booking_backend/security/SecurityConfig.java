@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 "/api/event/getById/**",
                                 "/api/event/getAll",
                                 "/api/payments/notify",
+                                "/api/meta/categories",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

@@ -8,6 +8,7 @@ import com.company.ticket_booking_backend.security.JwtUtil;
 import com.company.ticket_booking_backend.service.CloudinaryService;
 import com.company.ticket_booking_backend.service.EmailService;
 import com.company.ticket_booking_backend.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,9 @@ public class UserServiceImpl implements UserService {
         this.cloudinaryService = cloudinaryService;
     }
 
+    @Value("${FRONTEND_URL}")
+    private String FRONTEND_URL;
+
     @Override
     public User createUser(User user) {
 
@@ -56,7 +60,8 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerificationToken(token);
         User savedUser= userRepository.save(user);
 
-        String link = "https://ticket-booking-backend-j5wu.onrender.com/api/auth/verify-email/" + token;
+        String link = FRONTEND_URL+"verify-email/" + token;
+        System.out.println(link);
         emailService.sendEmail(
                 savedUser.getEmail(),
                 "Verify Your Email",

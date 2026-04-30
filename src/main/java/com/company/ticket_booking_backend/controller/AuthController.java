@@ -65,7 +65,7 @@ public class AuthController {
     }
 
     // ================= EMAIL VERIFY =================
-    @GetMapping("/verify-email/{token}")
+    @PostMapping("/verify-email/{token}")
     public ResponseEntity<ApiResponse<String>> verifyEmail(@PathVariable String token) {
 
         userService.verifyEmail(token);

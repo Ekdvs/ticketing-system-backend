@@ -30,19 +30,19 @@ public class TicketServiceImpl implements TicketService {
                     booking.getUserId()
             );
 
-            System.out.println("QR TOKEN: " + token);
+            //System.out.println("QR TOKEN: " + token);
 
             byte[] qr = qrService.generateQR(token);
 
             Event event = eventService.getEventById(booking.getEventId());
-            System.out.println(event);
+            //System.out.println(event);
 
             byte[] pdf = pdfService.createPdf(booking, event,qr);
 
             String pdfUrl = cloudinaryService.uploadPdf(pdf, booking.getBookingId());
 
             booking.setTicketUrl(pdfUrl);
-            System.out.println("PDF URL: " + pdfUrl);
+            //System.out.println("PDF URL: " + pdfUrl);
 
             bookingRepository.save(booking);
 
@@ -76,6 +76,6 @@ public class TicketServiceImpl implements TicketService {
 
         bookingRepository.save(booking);
 
-        System.out.println("Ticket revoked for booking: " + bookingId);
+        //System.out.println("Ticket revoked for booking: " + bookingId);
     }
 }

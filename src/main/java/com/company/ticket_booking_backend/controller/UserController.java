@@ -26,7 +26,7 @@ public class UserController {
     // ================= CURRENT USER =================
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<User>> me(Authentication auth) {
-        System.out.println("Fetching current user info for: " + auth);
+        //System.out.println("Fetching current user info for: " + auth);
 
         String email = auth.getName();
 

@@ -50,8 +50,9 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             Map uploadResult = cloudinary.uploader().upload(
                     pdfBytes,
                     ObjectUtils.asMap(
-                            "resource_type", "raw",
-                            "public_id", "ticket-booking-site/" + fileName
+                            "resource_type", "raw",   // ✅ FIX
+                            "format", "pdf",            // ✅ ensure PDF
+                            "public_id", "ticket-booking-site/" + fileName +".pdf"
                     )
             );
 

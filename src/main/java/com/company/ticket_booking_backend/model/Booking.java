@@ -37,11 +37,23 @@ public class Booking {
 
     private String ticketUrl;
 
+    private LocalDateTime createdAt;
+
+
+
 
 
 
     //getter setter generate
 
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public String getId() {
         return id;

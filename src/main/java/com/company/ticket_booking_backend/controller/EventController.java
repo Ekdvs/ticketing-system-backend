@@ -190,7 +190,7 @@ public class EventController {
     }
 
     @GetMapping("/my")
-    @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER')")
     public ResponseEntity<ApiResponse<List<Event>>> getMyEvents() {
 
         User user = getCurrentUser();

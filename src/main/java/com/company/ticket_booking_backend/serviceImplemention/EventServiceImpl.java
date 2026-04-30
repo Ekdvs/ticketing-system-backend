@@ -33,29 +33,43 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event createEvent(Event event, List<MultipartFile> images) {
 
+        // Validate category
         if (!SubCategory.isValid(event.getCategory(), event.getSubCategory())) {
             throw new RuntimeException("Invalid subcategory");
         }
 
-        String organizeremail = (String) SecurityContextHolder
+        // Get logged-in user
+        String organizerEmail = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                .getPrincipal();
+                .getName();
 
-        User scanner = userService.getUserByEmail(organizeremail) ;
+        if (organizerEmail == null || organizerEmail.isEmpty()) {
+            throw new RuntimeException("Unauthorized user");
+        }
 
-        event.setOrganizerId(scanner.getId());
+        User organizer = userService.getUserByEmail(organizerEmail);
 
+        if (organizer == null) {
+            throw new RuntimeException("Organizer not found");
+        }
 
+        event.setOrganizerId(organizer.getId());
+
+        // Initialize event
         event.initialize();
 
-        event.setAvailableTickets(event.getAvailableTickets());
+        // Default tickets safety
+        if (event.getAvailableTickets() < 0) {
+            event.setAvailableTickets(0);
+        }
 
-        // ✅ MULTI IMAGE UPLOAD
+        // Upload images
         if (images != null && !images.isEmpty()) {
 
             List<String> imageUrls = images.stream()
-                    .map(cloudinaryService::uploadImage)
+                    .filter(img -> !img.isEmpty())
+                    .map(img -> cloudinaryService.uploadImage(img))
                     .toList();
 
             event.setImageUrls(imageUrls);

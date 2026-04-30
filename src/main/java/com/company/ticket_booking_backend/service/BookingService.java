@@ -19,4 +19,6 @@ public interface BookingService {
     //void updatePaymentChargedback(String orderId);
 
     void updatePaymentChargeback(String orderId);
+
+    List<Booking> getBookingsByUserId(String userId);
 }
