@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerificationToken(token);
         User savedUser= userRepository.save(user);
 
-        String link = FRONTEND_URL+"verify-email/" + token;
+        String link = FRONTEND_URL+"/verify-email/" + token;
         //System.out.println(link);
         emailService.sendEmail(
                 savedUser.getEmail(),
