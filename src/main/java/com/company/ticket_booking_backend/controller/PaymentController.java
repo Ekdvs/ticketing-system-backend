@@ -81,13 +81,13 @@ public class PaymentController {
         payHere.put("country",      "Sri Lanka");
         payHere.put("hash",         hash);
 
-        System.out.println("=== PAYHERE DEBUG ===");
-        System.out.println("MERCHANT_ID    : [" + MERCHANT_ID + "]");
-        System.out.println("MERCHANT_SECRET: [" + MERCHANT_SECRET + "]");
-        System.out.println("AMOUNT         : [" + amount + "]");
-        System.out.println("ORDER_ID       : [" + booking.getBookingId() + "]");
-        System.out.println("HASH           : [" + hash + "]");
-        System.out.println("====================");
+        //System.out.println("=== PAYHERE DEBUG ===");
+        //System.out.println("MERCHANT_ID    : [" + MERCHANT_ID + "]");
+        //System.out.println("MERCHANT_SECRET: [" + MERCHANT_SECRET + "]");
+        //System.out.println("AMOUNT         : [" + amount + "]");
+        //System.out.println("ORDER_ID       : [" + booking.getBookingId() + "]");
+        //System.out.println("HASH           : [" + hash + "]");
+        //System.out.println("====================");
 
         return payHere;
     }

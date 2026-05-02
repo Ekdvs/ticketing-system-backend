@@ -2,80 +2,66 @@ package com.company.ticket_booking_backend.serviceImplemention;
 
 import com.company.ticket_booking_backend.EmailTemplates.EmailTemplates;
 import com.company.ticket_booking_backend.model.Booking;
-import com.company.ticket_booking_backend.model.User;
 import com.company.ticket_booking_backend.service.EmailService;
-import com.company.ticket_booking_backend.service.UserService;
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
+import com.resend.*;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.Attachment;
+import com.resend.services.emails.model.CreateEmailOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Base64;
+import java.util.List;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
-    private final org.springframework.mail.javamail.JavaMailSender mailSender;
+    private final Resend resend;
 
-
-
-    public EmailServiceImpl(org.springframework.mail.javamail.JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-
+    public EmailServiceImpl(@Value("${resend.api.key}") String apiKey) {
+        this.resend = new Resend(apiKey);
     }
-
-
 
     @Override
     public void sendEmail(String to, String subject, String htmlBody) {
-
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from("Ticket Booking <noreply@ekdvs.xyz>")
+                    .to(List.of(to))
+                    .subject(subject)
+                    .html(htmlBody)
+                    .build();
 
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true); // ✅ THIS ENABLES HTML
-            helper.setFrom("yourgmail@gmail.com");
+            resend.emails().send(params);
 
-            mailSender.send(message);
-
-        } catch (Exception e) {
+        } catch (ResendException e) {
+            System.out.println("email faild"+e.getMessage());
             throw new RuntimeException("Email sending failed: " + e.getMessage());
         }
     }
 
-    // 🎟 SEND PDF TICKET
     @Override
-    public void sendTicket(String toEmail,String name, Booking booking, byte[] pdf) {
-
+    public void sendTicket(String toEmail, String name, Booking booking, byte[] pdf) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            String html = EmailTemplates.ticketEmail(name, booking);
 
-            helper.setTo(toEmail);
-            helper.setSubject("Your Event Ticket 🎟");
+            Attachment attachment = Attachment.builder()
+                    .fileName("ticket.pdf")
+                    .content(Base64.getEncoder().encodeToString(pdf))
+                    .build();
 
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from("Ticket Booking <noreply@ekdvs.xyz>")
+                    .to(List.of(toEmail))
+                    .subject("Your Event Ticket 🎟")
+                    .html(html)
+                    .attachments(List.of(attachment))
+                    .build();
 
+            resend.emails().send(params);
 
-            String html = EmailTemplates.ticketEmail(
-                    name,
-                    booking // 🔥 Cloudinary URL
-            );
-
-            helper.setText(html, true);
-
-            helper.addAttachment("ticket.pdf", new ByteArrayResource(pdf));
-
-            helper.setFrom("yourgmail@gmail.com");
-
-            mailSender.send(message);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Ticket email failed", e);
+        } catch (ResendException e) {
+            throw new RuntimeException("Ticket email failed: " + e.getMessage());
         }
     }
-
 }
