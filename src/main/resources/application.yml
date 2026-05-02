@@ -13,8 +13,8 @@ spring:
       write-concern: ACKNOWLEDGED
 
 server:
-  port: ${PORT:8080}
-
+  port: ${PORT:10000}
+  address: 0.0.0.0
 
 jwt:
   secret: ${JWT_SECRET}
@@ -31,14 +31,14 @@ payhere:
     secret: ${MERCHANT_SECRET}
 
 dotenv:
-  ignoreIfMissing: false
+  ignoreIfMissing: true
 
 qr:
   secret: ${QR_SECRET}
 
 resend:
   api:
-   key: ${RESEND_API_KEY}
+    key: ${RESEND_API_KEY}
 
 logging:
   level:
