@@ -9,19 +9,93 @@ public class EmailTemplates {
     // ================= HEADER =================
     public static String header() {
         return """
-        <div style="
-            background: linear-gradient(135deg, #0d6efd, #6610f2);
-            color: #fff;
-            text-align: center;
-            padding: 28px 20px;
-            font-size: 26px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        ">
-            🎫 Ticket Booking System
-            <div style="font-size:14px; font-weight:400; margin-top:5px;">
-                Fast • Secure • Reliable Booking Platform
+        <div style="margin:0; padding:0; background-color:#f4f6fb; font-family:'Segoe UI', Arial, sans-serif;">
+
+            <!-- Hidden preheader -->
+            <div style="display:none; max-height:0; overflow:hidden; color:#f4f6fb;">
+                Your ticket is confirmed – Thank you for booking with us!
             </div>
+
+            <!-- Top accent bar -->
+            <div style="height:5px; background:linear-gradient(90deg, #0d6efd, #6610f2, #d63384);"></div>
+
+            <!-- Header card -->
+            <div style="
+                background: linear-gradient(135deg, #0a58ca 0%%, #0d6efd 40%%, #6610f2 100%%);
+                padding: 48px 40px 40px 40px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            ">
+                <!-- Decorative circle top left -->
+                <div style="
+                    position:absolute; top:-40px; left:-40px;
+                    width:140px; height:140px;
+                    border-radius:50%%;
+                    background:rgba(255,255,255,0.06);
+                "></div>
+
+                <!-- Decorative circle bottom right -->
+                <div style="
+                    position:absolute; bottom:-30px; right:-30px;
+                    width:100px; height:100px;
+                    border-radius:50%%;
+                    background:rgba(255,255,255,0.06);
+                "></div>
+
+                <!-- Decorative circle top right -->
+                <div style="
+                    position:absolute; top:20px; right:60px;
+                    width:50px; height:50px;
+                    border-radius:50%%;
+                    background:rgba(255,255,255,0.04);
+                "></div>
+
+                <!-- Icon badge -->
+                <div style="
+                    display:inline-block;
+                    background:rgba(255,255,255,0.15);
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-radius:20px;
+                    padding:14px 28px;
+                    font-size:34px;
+                    margin-bottom:20px;
+                ">🎫</div>
+
+                <!-- Brand name -->
+                <div style="
+                    color:#ffffff;
+                    font-family:'Segoe UI', Arial, sans-serif;
+                    font-size:30px;
+                    font-weight:800;
+                    letter-spacing:0.5px;
+                    margin-bottom:10px;
+                    text-shadow:0 2px 12px rgba(0,0,0,0.2);
+                ">Ticket Booking System</div>
+
+                <!-- Tagline pill -->
+                <div style="
+                    display:inline-block;
+                    color:rgba(255,255,255,0.9);
+                    font-family:'Segoe UI', Arial, sans-serif;
+                    font-size:11px;
+                    font-weight:600;
+                    letter-spacing:3px;
+                    text-transform:uppercase;
+                    background:rgba(255,255,255,0.12);
+                    border:1px solid rgba(255,255,255,0.25);
+                    border-radius:20px;
+                    padding:7px 20px;
+                ">Fast &bull; Secure &bull; Reliable</div>
+            </div>
+
+            <!-- Wave separator -->
+            <div style="
+                background:linear-gradient(135deg, #0a58ca 0%%, #0d6efd 40%%, #6610f2 100%%);
+                height:28px;
+                clip-path:ellipse(55%% 100%% at 50%% 0%%);
+            "></div>
+
         </div>
     """;
     }
@@ -29,28 +103,150 @@ public class EmailTemplates {
     // ================= FOOTER =================
     public static String footer() {
         return """
+        <!-- Wave top for footer -->
         <div style="
-            background-color: #f8f9fa;
-            color: #6c757d;
-            text-align: center;
-            padding: 20px;
-            font-size: 13px;
-            border-top: 1px solid #e9ecef;
+            background-color:#1a1a2e;
+            height:28px;
+            clip-path:ellipse(55%% 100%% at 50%% 100%%);
+            margin-top:-1px;
+        "></div>
+
+        <!-- Footer -->
+        <div style="
+            background-color:#1a1a2e;
+            padding:36px 40px 32px 40px;
+            text-align:center;
+            font-family:'Segoe UI', Arial, sans-serif;
         ">
+            <!-- Icon badge -->
+            <div style="
+                display:inline-block;
+                background:linear-gradient(135deg,#0d6efd,#6610f2);
+                border-radius:16px;
+                padding:12px 22px;
+                font-size:26px;
+                margin-bottom:14px;
+                box-shadow:0 4px 20px rgba(13,110,253,0.4);
+            ">🎫</div>
 
-            <p style="margin:5px 0;">
-                © %s Ticket Booking System. All rights reserved.
-            </p>
+            <!-- Brand name -->
+            <div style="
+                color:#ffffff;
+                font-size:20px;
+                font-weight:800;
+                margin-bottom:4px;
+                letter-spacing:0.3px;
+            ">Ticket Booking System</div>
 
-            <p style="margin:5px 0;">
-                📍 Sri Lanka | 🌐 www.ticketbooking.com
-            </p>
+            <!-- Tagline -->
+            <div style="
+                color:rgba(255,255,255,0.35);
+                font-size:11px;
+                letter-spacing:3px;
+                text-transform:uppercase;
+                margin-bottom:26px;
+            ">Fast &bull; Secure &bull; Reliable</div>
 
-            <p style="margin:5px 0; font-size:12px;">
-                This is an automated email. Please do not reply.
-            </p>
+            <!-- Gradient divider -->
+            <div style="
+                width:80px;
+                height:3px;
+                background:linear-gradient(90deg,#0d6efd,#6610f2,#d63384);
+                margin:0 auto 26px auto;
+                border-radius:2px;
+            "></div>
+
+            <!-- Links row -->
+            <div style="margin-bottom:26px;">
+                <a href="https://project-qt6jb.vercel.app/" style="
+                    display:inline-block;
+                    color:#7c8bff;
+                    font-size:12px;
+                    font-weight:500;
+                    text-decoration:none;
+                    margin:4px 6px;
+                    padding:7px 16px;
+                    border:1px solid rgba(124,139,255,0.3);
+                    border-radius:20px;
+                ">🌐 Website</a>
+                <a href="https://project-qt6jb.vercel.app/contact" style="
+                    display:inline-block;
+                    color:#7c8bff;
+                    font-size:12px;
+                    font-weight:500;
+                    text-decoration:none;
+                    margin:4px 6px;
+                    padding:7px 16px;
+                    border:1px solid rgba(124,139,255,0.3);
+                    border-radius:20px;
+                ">💬 Support</a>
+                <a href="https://project-qt6jb.vercel.app/privacy" style="
+                    display:inline-block;
+                    color:#7c8bff;
+                    font-size:12px;
+                    font-weight:500;
+                    text-decoration:none;
+                    margin:4px 6px;
+                    padding:7px 16px;
+                    border:1px solid rgba(124,139,255,0.3);
+                    border-radius:20px;
+                ">🔒 Privacy</a>
+            </div>
+
+            <!-- Stats row -->
+            <div style="
+                display:inline-block;
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.08);
+                border-radius:14px;
+                padding:18px 36px;
+                margin-bottom:26px;
+            ">
+                <table style="border-collapse:collapse;">
+                    <tr>
+                        <td style="
+                            text-align:center;
+                            padding:0 28px 0 0;
+                            border-right:1px solid rgba(255,255,255,0.1);
+                        ">
+                            <div style="color:#ffffff; font-size:18px; font-weight:700;">100%%</div>
+                            <div style="color:rgba(255,255,255,0.35); font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-top:3px;">Secure</div>
+                        </td>
+                        <td style="
+                            text-align:center;
+                            padding:0 28px;
+                            border-right:1px solid rgba(255,255,255,0.1);
+                        ">
+                            <div style="color:#ffffff; font-size:18px; font-weight:700;">24/7</div>
+                            <div style="color:rgba(255,255,255,0.35); font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-top:3px;">Support</div>
+                        </td>
+                        <td style="text-align:center; padding:0 0 0 28px;">
+                            <div style="color:#ffffff; font-size:18px; font-weight:700;">📍 LK</div>
+                            <div style="color:rgba(255,255,255,0.35); font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-top:3px;">Sri Lanka</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Divider line -->
+            <div style="border-top:1px solid rgba(255,255,255,0.07); margin:0 0 20px 0;"></div>
+
+            <!-- Copyright -->
+            <div style="
+                color:rgba(255,255,255,0.25);
+                font-size:11px;
+                margin-bottom:6px;
+            ">&copy; %s Ticket Booking System. All rights reserved.</div>
+
+            <!-- Auto notice -->
+            <div style="color:rgba(255,255,255,0.15); font-size:11px;">
+                This is an automated email &mdash; please do not reply directly to this message.
+            </div>
 
         </div>
+
+        <!-- Bottom accent bar -->
+        <div style="height:5px; background:linear-gradient(90deg,#0d6efd,#6610f2,#d63384);"></div>
     """.formatted(Year.now().getValue());
     }
 
