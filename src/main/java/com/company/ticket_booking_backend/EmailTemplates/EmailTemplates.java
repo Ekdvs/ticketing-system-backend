@@ -21,17 +21,18 @@ public class EmailTemplates {
 
             <!-- Header card -->
             <div style="
-                background: linear-gradient(135deg, #0a58ca 0%%, #0d6efd 40%%, #6610f2 100%%);
+                background: linear-gradient(135deg, #0a58ca 0%, #0d6efd 40%, #6610f2 100%);
                 padding: 48px 40px 40px 40px;
                 text-align: center;
                 position: relative;
                 overflow: hidden;
             ">
+
                 <!-- Decorative circle top left -->
                 <div style="
                     position:absolute; top:-40px; left:-40px;
                     width:140px; height:140px;
-                    border-radius:50%%;
+                    border-radius:50%;
                     background:rgba(255,255,255,0.06);
                 "></div>
 
@@ -39,7 +40,7 @@ public class EmailTemplates {
                 <div style="
                     position:absolute; bottom:-30px; right:-30px;
                     width:100px; height:100px;
-                    border-radius:50%%;
+                    border-radius:50%;
                     background:rgba(255,255,255,0.06);
                 "></div>
 
@@ -47,7 +48,7 @@ public class EmailTemplates {
                 <div style="
                     position:absolute; top:20px; right:60px;
                     width:50px; height:50px;
-                    border-radius:50%%;
+                    border-radius:50%;
                     background:rgba(255,255,255,0.04);
                 "></div>
 
@@ -65,7 +66,6 @@ public class EmailTemplates {
                 <!-- Brand name -->
                 <div style="
                     color:#ffffff;
-                    font-family:'Segoe UI', Arial, sans-serif;
                     font-size:30px;
                     font-weight:800;
                     letter-spacing:0.5px;
@@ -77,7 +77,6 @@ public class EmailTemplates {
                 <div style="
                     display:inline-block;
                     color:rgba(255,255,255,0.9);
-                    font-family:'Segoe UI', Arial, sans-serif;
                     font-size:11px;
                     font-weight:600;
                     letter-spacing:3px;
@@ -86,14 +85,15 @@ public class EmailTemplates {
                     border:1px solid rgba(255,255,255,0.25);
                     border-radius:20px;
                     padding:7px 20px;
-                ">Fast &bull; Secure &bull; Reliable</div>
+                ">Fast • Secure • Reliable</div>
+
             </div>
 
             <!-- Wave separator -->
             <div style="
-                background:linear-gradient(135deg, #0a58ca 0%%, #0d6efd 40%%, #6610f2 100%%);
+                background:linear-gradient(135deg, #0a58ca 0%, #0d6efd 40%, #6610f2 100%);
                 height:28px;
-                clip-path:ellipse(55%% 100%% at 50%% 0%%);
+                clip-path:ellipse(55% 100% at 50% 0%);
             "></div>
 
         </div>
