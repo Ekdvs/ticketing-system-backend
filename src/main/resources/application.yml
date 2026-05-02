@@ -36,7 +36,8 @@ qr:
   secret: ${QR_SECRET}
 
 resend:
-  api-key: ${RESEND_API_KEY}
+  api:
+   key: ${RESEND_API_KEY}
 
 logging:
   level:
