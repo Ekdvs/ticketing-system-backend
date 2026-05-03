@@ -7,6 +7,7 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
@@ -18,10 +19,18 @@ public class PdfServiceImpl implements PdfService {
     @Override
     public byte[] createPdf(Booking booking, Event event, byte[] qr) throws Exception {
 
-        String qrBase64 = Base64.getEncoder().encodeToString(qr);
-        byte[] logoBytes = Files.readAllBytes(
-                Paths.get("src/main/resources/static/logo.png")
+        InputStream logoStream = getClass()
+                .getClassLoader()
+                .getResourceAsStream("static/logo.png");
+        if (logoStream == null) {
+            throw new RuntimeException("Logo not found in classpath");
+        }
+        System.out.println(
+                getClass().getClassLoader().getResource("static/logo.png")
         );
+
+        String qrBase64 = Base64.getEncoder().encodeToString(qr);
+        byte[] logoBytes =logoStream.readAllBytes();
 
         String logoBase64 = Base64.getEncoder().encodeToString(logoBytes);
 
