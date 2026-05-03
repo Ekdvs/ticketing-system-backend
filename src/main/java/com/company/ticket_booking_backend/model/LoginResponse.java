@@ -6,18 +6,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class LoginResponse {
     private String accessToken;
     private String refreshToken;
     private String email;
     private String role;
-
-    public LoginResponse(String accessToken, String refreshToken, String email, String role) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-        this.email = email;
-        this.role = role;
-    }
+    private String name;
 
     public String getAccessToken() {
         return accessToken;
@@ -49,5 +44,13 @@ public class LoginResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

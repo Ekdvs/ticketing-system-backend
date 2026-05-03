@@ -129,7 +129,8 @@ public class UserServiceImpl implements UserService {
                 newAccessToken,
                 newRefreshToken,
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getFirstName()
         );
     }
     // ---- other methods unchanged ----

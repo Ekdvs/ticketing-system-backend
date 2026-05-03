@@ -44,7 +44,9 @@ public class AuthController {
                 accessToken,
                 refreshToken,
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getFirstName()
+
         );
 
         return ResponseEntity.ok(
@@ -145,7 +147,8 @@ public class AuthController {
                 accessToken,
                 refreshToken,
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getFirstName()
         );
         return ResponseEntity.ok(
                 new ApiResponse<>("Google login successful", false, true, res)
