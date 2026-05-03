@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/event/getById/**",
                                 "/api/event/getAll",
+                                "/api/event/search/",
                                 "/api/payments/notify",
                                 "/api/meta/categories",
                                 "/swagger-ui/**",
