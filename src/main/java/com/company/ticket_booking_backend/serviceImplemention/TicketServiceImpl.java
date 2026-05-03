@@ -42,7 +42,7 @@ public class TicketServiceImpl implements TicketService {
             String pdfUrl = cloudinaryService.uploadPdf(pdf, booking.getBookingId());
 
             booking.setTicketUrl(pdfUrl);
-            System.out.println("PDF URL: " + pdfUrl);
+            //System.out.println("PDF URL: " + pdfUrl);
 
             bookingRepository.save(booking);
 

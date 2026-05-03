@@ -25,9 +25,7 @@ public class PdfServiceImpl implements PdfService {
         if (logoStream == null) {
             throw new RuntimeException("Logo not found in classpath");
         }
-        System.out.println(
-                getClass().getClassLoader().getResource("static/logo.png")
-        );
+
 
         String qrBase64 = Base64.getEncoder().encodeToString(qr);
         byte[] logoBytes =logoStream.readAllBytes();
